@@ -1,0 +1,330 @@
+---
+title: 'React 开发最佳实践 2024'
+date: '2025-08-03'
+excerpt: '总结了 React 开发中的最佳实践，包括组件设计、状态管理、性能优化等方面的经验。'
+tags: ['React', '最佳实践', '性能优化', '前端开发']
+author: 'SinzoL'
+---
+
+# React 开发最佳实践 2024
+
+作为一名前端开发者，我想分享一些在 React 开发中积累的最佳实践。这些经验可以帮助你写出更好的 React 代码。
+
+## 组件设计原则
+
+### 1. 单一职责原则
+
+每个组件应该只负责一个功能：
+
+```jsx
+// ❌ 不好的做法
+function UserDashboard({ user }) {
+  return (
+    <div>
+      <header>
+        <h1>{user.name}</h1>
+        <img src={user.avatar} alt="Avatar" />
+      </header>
+      <main>
+        <div>Posts: {user.posts.length}</div>
+        <div>Followers: {user.followers}</div>
+      </main>
+      <footer>
+        <button>Edit Profile</button>
+        <button>Settings</button>
+      </footer>
+    </div>
+  );
+}
+
+// ✅ 好的做法
+function UserDashboard({ user }) {
+  return (
+    <div>
+      <UserHeader user={user} />
+      <UserStats user={user} />
+      <UserActions user={user} />
+    </div>
+  );
+}
+```
+
+### 2. 组件组合优于继承
+
+使用组合模式来复用逻辑：
+
+```jsx
+// ✅ 使用组合
+function Card({ children, className = "" }) {
+  return (
+    <div className={`card ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function UserCard({ user }) {
+  return (
+    <Card className="user-card">
+      <h3>{user.name}</h3>
+      <p>{user.email}</p>
+    </Card>
+  );
+}
+```
+
+## 状态管理
+
+### 1. 选择合适的状态管理方案
+
+- **本地状态** - 使用 `useState` 和 `useReducer`
+- **全局状态** - 考虑 Context API、Zustand 或 Redux Toolkit
+- **服务器状态** - 使用 React Query 或 SWR
+
+```jsx
+// 本地状态
+function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <button onClick={() => setCount(c => c + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+
+// 全局状态 (使用 Context)
+const ThemeContext = createContext();
+
+function App() {
+  const [theme, setTheme] = useState('light');
+  
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      <MainContent />
+    </ThemeContext.Provider>
+  );
+}
+```
+
+### 2. 状态提升和下沉
+
+将状态放在合适的层级：
+
+```jsx
+// ✅ 状态在需要的最近公共祖先
+function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  
+  return (
+    <div>
+      <TodoForm onAdd={setTodos} />
+      <TodoList todos={todos} onToggle={setTodos} />
+    </div>
+  );
+}
+```
+
+## 性能优化
+
+### 1. 使用 React.memo
+
+对于纯组件，使用 `React.memo` 避免不必要的重渲染：
+
+```jsx
+const ExpensiveComponent = React.memo(function ExpensiveComponent({ data }) {
+  // 复杂的计算或渲染逻辑
+  return <div>{/* 渲染内容 */}</div>;
+});
+```
+
+### 2. 使用 useMemo 和 useCallback
+
+缓存计算结果和函数引用：
+
+```jsx
+function SearchResults({ query, items }) {
+  const filteredItems = useMemo(() => {
+    return items.filter(item => 
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [query, items]);
+
+  const handleItemClick = useCallback((item) => {
+    console.log('Clicked:', item);
+  }, []);
+
+  return (
+    <div>
+      {filteredItems.map(item => (
+        <Item 
+          key={item.id} 
+          item={item} 
+          onClick={handleItemClick} 
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### 3. 代码分割
+
+使用动态导入进行代码分割：
+
+```jsx
+import { lazy, Suspense } from 'react';
+
+const LazyComponent = lazy(() => import('./LazyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LazyComponent />
+    </Suspense>
+  );
+}
+```
+
+## 错误处理
+
+### 1. 错误边界
+
+创建错误边界来捕获组件错误：
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### 2. 异步错误处理
+
+使用 try-catch 处理异步操作：
+
+```jsx
+function DataFetcher() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.getData();
+      setData(response.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error}</div>}
+      {data && <div>{/* 渲染数据 */}</div>}
+    </div>
+  );
+}
+```
+
+## 代码组织
+
+### 1. 文件结构
+
+保持清晰的文件结构：
+
+```
+src/
+├── components/
+│   ├── common/
+│   ├── forms/
+│   └── layout/
+├── hooks/
+├── utils/
+├── types/
+└── pages/
+```
+
+### 2. 自定义 Hooks
+
+提取可复用的逻辑到自定义 hooks：
+
+```jsx
+function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      return initialValue;
+    }
+  });
+
+  const setValue = (value) => {
+    try {
+      setStoredValue(value);
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
+```
+
+## 测试
+
+### 1. 单元测试
+
+使用 React Testing Library 进行组件测试：
+
+```jsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+test('increments counter when button is clicked', () => {
+  render(<Counter />);
+  const button = screen.getByRole('button');
+  const count = screen.getByText(/count: 0/i);
+  
+  fireEvent.click(button);
+  
+  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();
+});
+```
+
+## 总结
+
+这些最佳实践可以帮助你：
+
+1. 写出更可维护的代码
+2. 提高应用性能
+3. 减少 bug 的产生
+4. 提升开发效率
+
+记住，最佳实践会随着 React 的发展而变化，保持学习和更新你的知识是很重要的。
+
+你在 React 开发中有什么经验想分享吗？欢迎在评论区讨论！
