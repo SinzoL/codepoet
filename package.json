@@ -1,7 +1,17 @@
 {
-  "name": "my-blog",
+  "name": "codepoet",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "SinzoL",
+    "email": "3013749951@qq.com",
+    "url": "https://github.com/SinzoL"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SinzoL/codepoet.git"
+  },
+  "homepage": "https://github.com/SinzoL/codepoet#readme",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -11,6 +21,7 @@
     "lint:css:fix": "stylelint \"**/*.css\" --fix"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "next": "15.5.3",

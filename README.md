@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CodePoet
 
-## Getting Started
+> 用代码编织诗意，用技术书写人生
 
-First, run the development server:
+## 🎨 项目简介
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+CodePoet 是一个充满诗意的技术博客，基于 Next.js 15 构建。由 [SinzoL](https://github.com/SinzoL) 创作，欢迎一起在 0 和 1 的世界里寻找属于程序员的浪漫。
+
+## ✨ 特性
+
+- 🚀 **现代化技术栈** - Next.js 15 + TypeScript + Tailwind CSS
+- 📝 **Markdown 支持** - 用最纯粹的方式书写技术诗篇
+- 🎯 **SEO 优化** - 静态生成，让诗意传播得更远
+- 📱 **响应式设计** - 在任何设备上都保持诗意
+- 🎨 **诗意界面** - 将技术与美学完美融合
+- ⚡ **性能优化** - 快速加载如灵感的闪现
+
+## 🛠️ 技术栈
+
+```javascript
+const poetryStack = {
+  framework: 'Next.js 15',    // 构建诗意的框架
+  styling: 'Tailwind CSS',    // 描绘美感的画笔
+  language: 'TypeScript',     // 严谨而优雅的语言
+  deployment: 'Vercel',       // 让诗歌飞向云端
+  content: 'Markdown',        // 用最纯粹的方式书写
+  soul: '❤️ 与诗意'           // 最重要的灵魂成分
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 快速开始
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 安装依赖
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 启动开发服务器
+```bash
+npm run dev
+```
 
-## Learn More
+### 构建生产版本
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 代码质量检查
+```bash
+npm run lint        # JavaScript/TypeScript 检查
+npm run lint:css    # CSS 代码检查
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 创作新的诗篇
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+在 `posts/` 目录下创建新的 `.md` 文件：
 
-## Deploy on Vercel
+```markdown
+---
+title: '你的诗篇标题'
+date: '2025-01-01'
+excerpt: '诗篇的简短摘要'
+tags: ['标签1', '标签2']
+author: 'CodePoet'
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 你的诗篇内容
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+在这里用 Markdown 格式书写你的技术诗歌...
+```
+
+## 📁 项目结构
+
+```
+codepoet/
+├── src/
+│   ├── app/                 # 应用的核心诗篇
+│   ├── components/          # 可复用的诗句组件
+│   └── lib/                 # 工具函数的诗意库
+├── posts/                   # Markdown 诗歌原稿
+│   ├── 1-2025-0115.md        # 第一首诗
+│   ├── 2-2025-0120.md # Next.js 诗意艺术
+│   └── 3-2025-0803.md # React 诗意实践
+└── public/                  # 静态资源
+```
+
+## 🎯 部署
+
+### 部署到 Vercel
+
+1. 将代码推送到 GitHub
+2. 在 [Vercel](https://vercel.com) 导入项目
+3. 一键部署完成
+
+### 自定义域名
+
+如果你有自己的域名，可以在 Vercel 项目设置中添加自定义域名。
+
+## 🎨 自定义
+
+### 更改网站标题
+编辑 `src/components/Header.tsx`
+
+### 修改个人信息
+编辑 `src/app/about/page.tsx`
+
+### 调整样式主题
+修改 `src/app/globals.css` 和 Tailwind 配置
+
+## 📄 许可证
+
+MIT License - 让诗意自由传播
+
+## 👨‍💻 作者
+
+**SinzoL**
+- GitHub: [@SinzoL](https://github.com/SinzoL)
+- Email: 3013749951@qq.com
+- 项目地址: [https://github.com/SinzoL/codepoet](https://github.com/SinzoL/codepoet)
+
+## 🤝 贡献
+
+欢迎所有热爱编程艺术的朋友们贡献代码和想法！
+
+---
+
+> "在这个数字时代，让我们不仅做一个解决问题的程序员，更要做一个创造美的艺术家。"
+> 
+> —— CodePoet
