@@ -2,10 +2,11 @@
 
 ## 📋 部署前检查清单
 
-- [x] 项目已配置 `vercel.json`
+- [x] 项目已配置 `vercel.json`（免费计划优化）
 - [x] 优化了 `next.config.ts`
 - [ ] 代码已推送到 GitHub
 - [ ] 腾讯云域名已购买
+- [ ] 注册 Vercel 免费账号
 
 ## 🔧 第一步：推送代码到 GitHub
 
