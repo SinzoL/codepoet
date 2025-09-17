@@ -36,17 +36,17 @@ export default function About() {
               </p>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">前端诗韵</h3>
-                  <p className="text-sm text-blue-700">React, Next.js, TypeScript<br/>用组件编织用户体验的诗篇</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">前端诗韵</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">React, Next.js, TypeScript<br/>用组件编织用户体验的诗篇</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-900 mb-2">后端韵律</h3>
-                  <p className="text-sm text-green-700">Node.js, Python, Go<br/>在服务器端谱写逻辑的乐章</p>
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-900 dark:text-green-200 mb-2">后端韵律</h3>
+                  <p className="text-sm text-green-700 dark:text-green-300">Node.js, Python, Go<br/>在服务器端谱写逻辑的乐章</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-900 mb-2">数据之美</h3>
-                  <p className="text-sm text-purple-700">PostgreSQL, MongoDB<br/>让数据在结构中展现优雅</p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-900 dark:text-purple-200 mb-2">数据之美</h3>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">PostgreSQL, MongoDB<br/>让数据在结构中展现优雅</p>
                 </div>
               </div>
               

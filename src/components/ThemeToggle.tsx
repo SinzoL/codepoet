@@ -36,11 +36,6 @@ export default function ThemeToggle() {
           </svg>
         )}
       </button>
-      
-      {/* 调试信息 - 临时显示当前主题状态 */}
-      <div className="absolute -top-8 right-0 text-xs bg-black text-white px-2 py-1 rounded">
-        {theme}
-      </div>
     </div>
   );
 }
