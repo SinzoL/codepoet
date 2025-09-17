@@ -1,13 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   images: {
     domains: ['localhost'],
     unoptimized: false,
-  },
-  experimental: {
-    optimizeCss: true,
   },
   compress: true,
   poweredByHeader: false,

@@ -6,9 +6,9 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
