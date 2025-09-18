@@ -16,7 +16,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
             CodePoet
             <span className="block text-2xl md:text-3xl font-normal text-gray-600 dark:text-gray-300 mt-2">
-              代码诗人
+              代码与诗
             </span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
