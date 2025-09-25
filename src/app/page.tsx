@@ -1,56 +1,56 @@
-import { getSortedPostsData } from '@/lib/posts';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import PostCard from '@/components/PostCard';
+import Link from 'next/link';
 
 export default function Home() {
-  const allPostsData = getSortedPostsData();
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            CodePoet
-            <span className="block text-2xl md:text-3xl font-normal text-gray-600 mt-2">
-              代码与诗
-            </span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            在这个数字时代，我用代码编织诗意，用算法描绘梦想。<br />
-            这里是技术与艺术的交汇点，是逻辑与创意的诗意空间。<br />
-            让我们一起在 0 和 1 的世界里，寻找属于程序员的浪漫。
-          </p>
-        </div>
-
-        {/* Posts Section */}
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">最新文章</h2>
-          
-          {allPostsData.length > 0 ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
-              {allPostsData.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8">
+              CodePoet
+            </h1>
+            <div className="text-2xl md:text-3xl text-gray-600 mb-12 font-light">
+              代码与诗的交响
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">诗篇正在酝酿中...</h3>
-              <p className="text-gray-500">
-                每一篇技术文章都是一首代码诗歌，正在用心雕琢中。<br/>
-                在 <code className="bg-gray-100 px-2 py-1 rounded text-sm">posts/</code> 目录下添加 Markdown 文件来发布你的第一首诗篇。
+            
+            {/* 诗意描述 */}
+            <div className="max-w-2xl mx-auto mb-16">
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                在这个数字时代，我用代码编织诗意，用算法描绘梦想
+              </p>
+              <p className="text-base text-gray-600 leading-relaxed">
+                这里是技术与艺术的交汇点，是逻辑与创意的诗意空间<br />
+                让我们一起在 0 和 1 的世界里，寻找属于程序员的浪漫
               </p>
             </div>
-          )}
-        </section>
+
+            {/* 代码诗歌 */}
+            <div className="bg-gray-900 text-green-400 p-8 rounded-lg font-mono text-sm md:text-base max-w-lg mx-auto mb-12 shadow-lg">
+              <div className="text-left">
+                <div className="text-gray-500">{`// 代码诗人的第一首诗`}</div>
+                <div className="mt-2">
+                  <span className="text-blue-400">function</span> <span className="text-yellow-400">createDream</span>() {'{'}
+                </div>
+                <div className="ml-4 mt-1">
+                  <span className="text-purple-400">const</span> <span className="text-white">passion</span> = <span className="text-green-300">&apos;coding&apos;</span>;
+                </div>
+                <div className="ml-4">
+                  <span className="text-purple-400">const</span> <span className="text-white">poetry</span> = <span className="text-green-300">&apos;life&apos;</span>;
+                </div>
+                <div className="ml-4 mt-1">
+                  <span className="text-pink-400">return</span> <span className="text-white">passion</span> + <span className="text-white">poetry</span>;
+                </div>
+                <div className="mt-1">{'}'}</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </main>
 
       <Footer />

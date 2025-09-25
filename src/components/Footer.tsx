@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
           <p className="text-gray-600">
-            © {new Date().getFullYear()} CodePoet. 用 ❤️ 和诗意编织，以 Next.js 为笔
+            © {new Date().getFullYear()} CodePoet.
           </p>
           <div className="mt-4 flex justify-center space-x-6">
             <a href="https://github.com/SinzoL" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-600 transition-colors">

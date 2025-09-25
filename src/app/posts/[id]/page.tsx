@@ -4,6 +4,7 @@ import { zhCN } from 'date-fns/locale';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MarkdownContent from '@/components/MarkdownContent';
+import BackButton from '@/components/BackButton';
 import Link from 'next/link';
 
 interface PostPageProps {
@@ -31,17 +32,7 @@ export default async function Post({ params }: PostPageProps) {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
           {/* Article Header */}
           <div className="px-6 py-8 sm:px-8">
-            <div className="mb-6">
-              <Link
-                href="/"
-                className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                返回首页
-              </Link>
-            </div>
+            <BackButton postCategory={postData.category} />
             
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               {postData.title}
@@ -73,16 +64,6 @@ export default async function Post({ params }: PostPageProps) {
           <div className="px-6 pb-8 sm:px-8">
             <MarkdownContent content={postData.content || ''} />
           </div>
-        </div>
-        
-        {/* Navigation */}
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-          >
-            查看更多文章
-          </Link>
         </div>
       </main>
 

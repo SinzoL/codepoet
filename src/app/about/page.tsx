@@ -10,57 +10,58 @@ export default function About() {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="px-6 py-8 sm:px-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-              关于 CodePoet
+              关于我
             </h1>
             
             <div className="prose prose-lg max-w-none">
-              <p className="text-xl text-gray-600 mb-6">
-                你好，我是 SinzoL —— 一个在数字世界里寻找诗意的代码诗人。
+              <p className="text-xl text-gray-600 mb-8">
+                你好，我是 SinzoL，一个热爱挑战的程序员。
               </p>
               
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的故事</h2>
-              <p className="text-gray-700 mb-6">
-                在键盘敲击的韵律中，在算法逻辑的美感里，我发现了编程的诗意。每一行代码都是一句诗，每一个函数都是一段旋律。通过这个博客，我希望能够：
-              </p>
-              
-              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
-                <li>用诗意的语言分享技术的美妙与深邃</li>
-                <li>记录代码世界里的灵感与思考</li>
-                <li>与同样热爱编程艺术的朋友们交流心得</li>
-                <li>在技术与人文的交汇点持续探索</li>
-              </ul>
-              
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的技术诗篇</h2>
-              <p className="text-gray-700 mb-4">
-                在这些技术的海洋中，我编织着属于自己的数字诗歌：
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">前端诗韵</h3>
-                  <p className="text-sm text-blue-700">React, Next.js, TypeScript<br/>用组件编织用户体验的诗篇</p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的爱好</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <div className="flex items-center mb-3">
+                    <span className="text-2xl mr-3">🏃‍♂️</span>
+                    <h3 className="font-semibold text-blue-900">马拉松</h3>
+                  </div>
+                  <p className="text-blue-700">
+                    享受在跑道上挥洒汗水的感觉，每一步都是对自己极限的挑战。长跑教会了我坚持和耐力，这些品质在编程中同样重要。
+                  </p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-900 mb-2">后端韵律</h3>
-                  <p className="text-sm text-green-700">Node.js, Python, Go<br/>在服务器端谱写逻辑的乐章</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-900 mb-2">数据之美</h3>
-                  <p className="text-sm text-purple-700">PostgreSQL, MongoDB<br/>让数据在结构中展现优雅</p>
+                
+                <div className="bg-green-50 p-6 rounded-lg">
+                  <div className="flex items-center mb-3">
+                    <span className="text-2xl mr-3">🧩</span>
+                    <h3 className="font-semibold text-green-900">数独</h3>
+                  </div>
+                  <p className="text-green-700">
+                    热爱数独游戏中的逻辑推理和数字排列。这种对规律和逻辑的敏感度，让我在算法设计和问题解决上有着独特的思维方式。
+                  </p>
                 </div>
               </div>
               
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">与诗人对话</h2>
-              <p className="text-gray-700 mb-6">
-                如果我的文字触动了你的心弦，或者你也想在代码的世界里寻找诗意，欢迎与我交流：
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">比赛经历</h2>
+              <div className="bg-purple-50 p-6 rounded-lg mb-8">
+                <div className="flex items-center mb-3">
+                  <span className="text-2xl mr-3">🔐</span>
+                  <h3 className="font-semibold text-purple-900">网络安全竞赛</h3>
+                </div>
+                <p className="text-purple-700">
+                  作为密码手参与过多次网络安全比赛，专注于密码学算法的分析与破解。
+                </p>
+              </div>
               
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">联系我</h2>
+              <p className="text-gray-600 mb-4">
+                如果你也喜欢跑步、数独，或者对网络安全感兴趣，欢迎和我交流！
+              </p>
               <div className="flex space-x-4">
                 <a
                   href="mailto:3013749951@qq.com"
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
-                  发送邮件
+                  📧 邮箱
                 </a>
                 <a
                   href="https://github.com/SinzoL"
@@ -68,7 +69,7 @@ export default function About() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
-                  GitHub
+                  💻 GitHub
                 </a>
               </div>
             </div>
