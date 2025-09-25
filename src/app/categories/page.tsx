@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CategoryIcon from '@/components/CategoryIcon';
 import Link from 'next/link';
 import { categories } from '@/lib/categories';
 import { getSortedPostsData } from '@/lib/posts';
@@ -34,7 +35,9 @@ export default function Categories() {
             >
               <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 h-full">
                 <div className="flex items-center mb-4">
-                  <span className="text-3xl mr-3">{category.icon}</span>
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mr-3">
+                    <CategoryIcon categoryId={category.id} className="w-6 h-6 text-gray-600" />
+                  </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                       {category.name}
@@ -68,7 +71,11 @@ export default function Categories() {
                 <Link key={post.id} href={`/posts/${post.id}`} className="group">
                   <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4">
                     <div className="flex items-center mb-2">
-                      <span className="text-lg mr-2">{category?.icon}</span>
+                      {category && (
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 mr-2">
+                          <CategoryIcon categoryId={category.id} className="w-3 h-3 text-gray-600" />
+                        </div>
+                      )}
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${category?.color}`}>
                         {category?.name}
                       </span>

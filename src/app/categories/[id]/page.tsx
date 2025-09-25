@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PostCard from '@/components/PostCard';
+import CategoryIcon from '@/components/CategoryIcon';
 import Link from 'next/link';
 import { categories, getCategoryById } from '@/lib/categories';
 import { getSortedPostsData } from '@/lib/posts';
@@ -50,7 +51,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* 分类头部 */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
           <div className="flex items-center mb-4">
-            <span className="text-4xl mr-4">{category.icon}</span>
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mr-4">
+              <CategoryIcon categoryId={category.id} className="w-8 h-8 text-gray-600" />
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${category.color} mt-2`}>
@@ -72,8 +75,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <span className="text-6xl">{category.icon}</span>
+            <div className="flex justify-center mb-4">
+              <div className="flex items-center justify-center w-24 h-24 rounded-full bg-gray-100">
+                <CategoryIcon categoryId={category.id} className="w-12 h-12 text-gray-400" />
+              </div>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">暂无文章</h3>
             <p className="text-gray-500 mb-6">

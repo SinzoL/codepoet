@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { PostData } from '@/lib/posts';
 import { getCategoryById } from '@/lib/categories';
+import CategoryIcon from './CategoryIcon';
 
 interface PostCardProps {
   post: PostData;
@@ -27,7 +28,7 @@ export default function PostCard({ post }: PostCardProps) {
               href={`/categories/${category.id}`}
               className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${category.color} hover:opacity-80 transition-opacity`}
             >
-              <span className="mr-1">{category.icon}</span>
+              <CategoryIcon categoryId={category.id} className="w-3 h-3 mr-1" />
               {category.name}
             </Link>
           )}
@@ -59,16 +60,6 @@ export default function PostCard({ post }: PostCardProps) {
             ))}
           </div>
         )}
-        
-        <Link
-          href={`/posts/${post.id}`}
-          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
-        >
-          阅读更多
-          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
       </div>
     </article>
   );
