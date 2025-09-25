@@ -19,7 +19,7 @@ export default function About() {
               </p>
               
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的爱好</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="bg-blue-50 p-6 rounded-lg">
                   <div className="flex items-center mb-3">
                     <span className="text-2xl mr-3">🏃‍♂️</span>
@@ -39,37 +39,102 @@ export default function About() {
                     热爱数独游戏中的逻辑推理和数字排列。这种对规律和逻辑的敏感度，让我在算法设计和问题解决上有着独特的思维方式。
                   </p>
                 </div>
-              </div>
-              
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">比赛经历</h2>
-              <div className="bg-purple-50 p-6 rounded-lg mb-8">
-                <div className="flex items-center mb-3">
-                  <span className="text-2xl mr-3">🔐</span>
-                  <h3 className="font-semibold text-purple-900">网络安全竞赛</h3>
+
+                <div className="bg-amber-50 p-6 rounded-lg">
+                  <div className="flex items-center mb-3">
+                    <span className="text-2xl mr-3">📚</span>
+                    <h3 className="font-semibold text-amber-900">阅读</h3>
+                  </div>
+                  <p className="text-amber-700">
+                    热爱文学作品，特别是经典小说。阅读让我在代码之外找到另一个精神世界，文字的力量总能给我带来新的思考和灵感。
+                  </p>
                 </div>
-                <p className="text-purple-700">
-                  作为密码手参与过多次网络安全比赛，专注于密码学算法的分析与破解。
-                </p>
+              </div>
+
+              {/* 阅读展示区域 */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-8 rounded-lg mb-8">
+                <h3 className="text-xl font-semibold text-amber-900 mb-6 text-center">我的阅读世界</h3>
+                <div className="flex flex-col lg:flex-row items-center gap-8">
+                  <div className="lg:w-1/3 flex justify-center">
+                    <div className="relative">
+                      <img 
+                        src="/Henryk_sienkiewicz.png" 
+                        alt="Henryk Sienkiewicz - 诺贝尔文学奖得主" 
+                        className="w-48 h-64 object-cover rounded-lg shadow-lg border-4 border-white"
+                      />
+                    </div>
+                  </div>
+                  <div className="lg:w-2/3 space-y-4">
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                      <h4 className="font-semibold text-gray-900 mb-2">📚 最喜欢的作家</h4>
+                      <p className="text-gray-700">
+                        <strong>亨利克·显克维支 (Henryk Sienkiewicz)</strong> - 1905年诺贝尔文学奖得主，波兰著名小说家。
+                        他的作品《你往何处去》深深震撼了我，展现了人性在历史洪流中的挣扎与光辉。
+                      </p>
+                    </div>
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                      <h4 className="font-semibold text-gray-900 mb-2">💭 阅读感悟</h4>
+                      <p className="text-gray-700">
+                        &ldquo;文学是人类精神的镜子，它不仅记录历史，更塑造未来。&rdquo; 
+                        每一本好书都是一次心灵的旅行，让我在技术世界之外保持对人文的思考。
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">历史小说</span>
+                      <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">经典文学</span>
+                      <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">哲学思辨</span>
+                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">人文关怀</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">联系我</h2>
-              <p className="text-gray-600 mb-4">
-                如果你也喜欢跑步、数独，或者对网络安全感兴趣，欢迎和我交流！
+              <p className="text-gray-600 mb-6">
+                如果你也喜欢跑步、数独、阅读，或者对网络安全感兴趣，欢迎和我交流！
               </p>
-              <div className="flex space-x-4">
+              
+              {/* 美化的联系方式按钮 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                {/* 邮箱按钮 */}
                 <a
                   href="mailto:3013749951@qq.com"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-out"
                 >
-                  📧 邮箱
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center justify-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-white bg-opacity-25 rounded-lg">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-sm text-white">邮箱联系</div>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-300 to-teal-300 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </a>
+
+                {/* GitHub 按钮 */}
                 <a
                   href="https://github.com/SinzoL"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  className="group relative overflow-hidden bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-out"
                 >
-                  💻 GitHub
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center justify-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-white bg-opacity-20 rounded-lg">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd"></path>
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <div className="font-semibold text-sm">GitHub</div>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-gray-400 to-gray-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </a>
               </div>
             </div>
