@@ -14,14 +14,6 @@ const nextConfig: NextConfig = {
   generateEtags: false,
   trailingSlash: false,
   
-  // 输出配置
-  output: 'standalone',
-  
-  // 实验性功能
-  experimental: {
-    optimizeCss: true,
-  },
-  
   // 环境变量
   env: {
     SITE_URL: process.env.VERCEL_URL 
