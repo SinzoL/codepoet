@@ -1,42 +1,8 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f9fafb;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-/* 深色模式变量 */
-.dark {
-  --background: #111827;
-  --foreground: #f9fafb;
-}
-
-html {
-  background-color: #f9fafb;
-  transition: background-color 0.3s ease;
-}
-
-html.dark {
-  background-color: #111827;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  background-color: #f9fafb;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.dark body {
-  background-color: #111827;
 }
 
 /* 自定义样式 */
@@ -53,9 +19,7 @@ body {
   max-width: none;
 }
 
-.dark .prose {
-  color: #d1d5db;
-}
+
 
 .prose h1 {
   color: #111827;
@@ -66,9 +30,7 @@ body {
   line-height: 1.11;
 }
 
-.dark .prose h1 {
-  color: #f9fafb;
-}
+
 
 .prose h2 {
   color: #111827;
@@ -79,9 +41,7 @@ body {
   line-height: 1.33;
 }
 
-.dark .prose h2 {
-  color: #f9fafb;
-}
+
 
 .prose h3 {
   color: #111827;
@@ -92,9 +52,7 @@ body {
   line-height: 1.6;
 }
 
-.dark .prose h3 {
-  color: #f9fafb;
-}
+
 
 .prose p {
   margin-top: 1.25rem;
@@ -112,22 +70,14 @@ body {
   color: #1d4ed8;
 }
 
-.dark .prose a {
-  color: #60a5fa;
-}
 
-.dark .prose a:hover {
-  color: #93c5fd;
-}
 
 .prose strong {
   color: #111827;
   font-weight: 600;
 }
 
-.dark .prose strong {
-  color: #f9fafb;
-}
+
 
 .prose code {
   color: #dc2626;
@@ -138,10 +88,7 @@ body {
   border-radius: 0.25rem;
 }
 
-.dark .prose code {
-  color: #fca5a5;
-  background-color: #374151;
-}
+
 
 .prose pre {
   color: #e5e7eb;
@@ -156,10 +103,7 @@ body {
   padding: 0.86em 1.14em;
 }
 
-.dark .prose pre {
-  background-color: #0f172a;
-  color: #e2e8f0;
-}
+
 
 .prose pre code {
   background-color: transparent;
@@ -204,7 +148,34 @@ body {
   padding-left: 1em;
 }
 
-.dark .prose blockquote {
-  color: #d1d5db;
-  border-left-color: #374151;
+/* 代码高亮样式 */
+.prose pre {
+  background-color: #282c34 !important;
+  color: #abb2bf !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  margin: 1.5rem 0 !important;
+  overflow-x: auto !important;
+  font-family: var(--font-geist-mono), Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
 }
+
+.prose pre code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+}
+
+/* 内联代码样式 */
+.prose code:not(pre code) {
+  background-color: inherit !important;
+  color: #dc2626 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
