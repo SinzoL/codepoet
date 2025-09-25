@@ -7,6 +7,34 @@ import remarkGfm from 'remark-gfm';
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
+// 清理 Markdown 语法，返回纯文本
+function cleanMarkdownText(text: string): string {
+  return text
+    // 移除标题符号 (# ## ### 等)
+    .replace(/^#{1,6}\s+/gm, '')
+    // 移除粗体和斜体 (**text** *text*)
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    // 移除代码块标记 (```code```)
+    .replace(/```[\s\S]*?```/g, '')
+    // 移除行内代码 (`code`)
+    .replace(/`([^`]+)`/g, '$1')
+    // 移除链接 [text](url)
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // 移除图片 ![alt](url)
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    // 移除列表符号 (- * +)
+    .replace(/^[\s]*[-*+]\s+/gm, '')
+    // 移除数字列表 (1. 2. 3.)
+    .replace(/^[\s]*\d+\.\s+/gm, '')
+    // 移除引用符号 (>)
+    .replace(/^>\s+/gm, '')
+    // 移除多余的空行
+    .replace(/\n\s*\n/g, '\n')
+    // 移除行首行尾空白
+    .trim();
+}
+
 export interface PostData {
   id: string;
   title: string;
@@ -60,12 +88,16 @@ export function getSortedPostsData(): PostData[] {
       // 使用 gray-matter 解析文章元数据
       const matterResult = matter(fileContents);
 
+      // 生成清理后的摘要
+      const cleanContent = cleanMarkdownText(matterResult.content);
+      const autoExcerpt = cleanContent.slice(0, 150) + (cleanContent.length > 150 ? '...' : '');
+      
       // 合并数据和 id
       return {
         id,
         title: matterResult.data.title || '无标题',
         date: matterResult.data.date || new Date().toISOString(),
-        excerpt: matterResult.data.excerpt || matterResult.content.slice(0, 150) + '...',
+        excerpt: matterResult.data.excerpt || autoExcerpt,
         tags: matterResult.data.tags || [],
         author: matterResult.data.author || '匿名',
         category: matterResult.data.category || category,
@@ -114,13 +146,17 @@ export async function getPostData(id: string): Promise<PostData> {
     .process(matterResult.content);
   const contentHtml = processedContent.toString();
 
+  // 生成清理后的摘要
+  const cleanContent = cleanMarkdownText(matterResult.content);
+  const autoExcerpt = cleanContent.slice(0, 150) + (cleanContent.length > 150 ? '...' : '');
+  
   // 合并数据
   return {
     id,
     content: contentHtml,
     title: matterResult.data.title || '无标题',
     date: matterResult.data.date || new Date().toISOString(),
-    excerpt: matterResult.data.excerpt || matterResult.content.slice(0, 150) + '...',
+    excerpt: matterResult.data.excerpt || autoExcerpt,
     tags: matterResult.data.tags || [],
     author: matterResult.data.author || '匿名',
     category: matterResult.data.category || fileInfo.category,

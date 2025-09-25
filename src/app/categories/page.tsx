@@ -50,12 +50,6 @@ export default function Categories() {
                 <p className="text-gray-600 leading-relaxed">
                   {category.description}
                 </p>
-                <div className="mt-4 flex items-center text-blue-600 group-hover:text-blue-800 transition-colors">
-                  <span className="text-sm font-medium">查看文章</span>
-                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
               </div>
             </Link>
           ))}
@@ -68,25 +62,25 @@ export default function Categories() {
             {allPosts.slice(0, 6).map((post) => {
               const category = categories.find(cat => cat.id === post.category);
               return (
-                <Link key={post.id} href={`/posts/${post.id}`} className="group">
-                  <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4">
+                <Link key={post.id} href={`/posts/${post.id}`} className="group block">
+                  <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 cursor-pointer transform hover:-translate-y-1 hover:bg-gray-50">
                     <div className="flex items-center mb-2">
                       {category && (
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 mr-2">
-                          <CategoryIcon categoryId={category.id} className="w-3 h-3 text-gray-600" />
+                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 mr-2 group-hover:bg-gray-200 transition-colors">
+                          <CategoryIcon categoryId={category.id} className="w-3 h-3 text-gray-600 group-hover:text-gray-700" />
                         </div>
                       )}
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${category?.color}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${category?.color} group-hover:opacity-80 transition-opacity`}>
                         {category?.name}
                       </span>
                     </div>
                     <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2 line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 text-sm line-clamp-2">
+                    <p className="text-gray-600 group-hover:text-gray-700 text-sm line-clamp-2 transition-colors">
                       {post.excerpt}
                     </p>
-                    <div className="mt-2 text-xs text-gray-500">
+                    <div className="mt-2 text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
                       {new Date(post.date).toLocaleDateString('zh-CN')}
                     </div>
                   </div>
