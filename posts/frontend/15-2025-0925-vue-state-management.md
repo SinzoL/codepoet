@@ -5,8 +5,6 @@ description: "深入对比 Vuex 和 Pinia 两大 Vue 状态管理方案的设计
 tags: ["Vue", "Vuex", "Pinia", "状态管理", "Vue3", "TypeScript"]
 ---
 
-# Vue 状态管理：Vuex vs Pinia 深度对比
-
 ## 状态管理的必要性
 
 ### 组件通信的复杂性

@@ -5,8 +5,6 @@ description: "深入解析 JavaScript 模块化的发展历程，从 CommonJS、
 tags: ["模块化", "CommonJS", "ESM", "AMD", "UMD", "JavaScript"]
 ---
 
-# 模块化演进：从 CommonJS 到 ESM
-
 ## 模块化的必要性
 
 ### 早期 JavaScript 的问题

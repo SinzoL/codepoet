@@ -6,8 +6,6 @@ tags: ["TCP", "网络协议", "三次握手", "四次挥手", "连接管理", "�
 category: "backend"
 ---
 
-# TCP 连接管理：三次握手与四次挥手详解
-
 TCP（Transmission Control Protocol）是一个面向连接的、可靠的传输层协议。本文将深入分析 TCP 连接的建立和断开过程，包括三次握手、四次挥手的详细机制。
 
 ## 目录

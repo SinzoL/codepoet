@@ -6,8 +6,6 @@ tags: ["HTTP", "安全", "Cookie", "CORS", "XSS", "缓存"]
 category: "backend"
 ---
 
-# HTTP 安全头部与 Cookie 详解
-
 在现代 Web 开发中，HTTP 安全头部和 Cookie 管理是保障应用安全的重要基石。本文将深入解析各种安全头部字段的作用机制和最佳实践。
 
 ## 目录

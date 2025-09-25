@@ -5,8 +5,6 @@ description: "全面对比 Vite 和 Webpack 两大主流构建工具的架构设
 tags: ["Vite", "Webpack", "构建工具", "性能对比", "前端工程化"]
 ---
 
-# Vite vs Webpack 构建工具深度对比
-
 ## 架构设计对比
 
 ### Webpack 架构原理

@@ -5,8 +5,6 @@ description: "深入解析 Vue 数据响应式系统的底层实现原理，包�
 tags: ["Vue", "响应式", "双向绑定", "Proxy", "Object.defineProperty", "依赖收集"]
 ---
 
-# Vue 数据响应式原理与双向绑定实现
-
 ## 响应式系统概述
 
 ### 什么是响应式

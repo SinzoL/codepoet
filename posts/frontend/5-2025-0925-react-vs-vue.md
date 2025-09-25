@@ -5,8 +5,6 @@ description: "全面对比 React 和 Vue 两大前端框架的设计理念、技
 tags: ["React", "Vue", "框架对比", "技术选型"]
 ---
 
-# React vs Vue 框架深度对比分析
-
 ## 设计理念对比
 
 ### React - 函数式编程思想

@@ -5,8 +5,6 @@ description: "深入解析 JavaScript 核心语言特性和 ES6+ 新特性，包
 tags: ["JavaScript", "ES6", "闭包", "原型链", "异步编程", "语言特性"]
 ---
 
-# JavaScript 语言特性与 ES6+ 新特性详解
-
 ## JavaScript 核心特性
 
 ### 作用域与闭包

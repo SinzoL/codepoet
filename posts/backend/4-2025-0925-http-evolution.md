@@ -6,8 +6,6 @@ tags: ["HTTP", "网络协议", "性能优化", "Web技术", "QUIC"]
 category: "backend"
 ---
 
-# HTTP 协议演进史：从 1.0 到 3.0 的技术革命
-
 HTTP（HyperText Transfer Protocol）作为 Web 的基础协议，经历了从简单文档传输到现代高性能 Web 应用支撑的重大演进。本文将深入分析 HTTP 各版本的技术特性和演进动机。
 
 ## 目录

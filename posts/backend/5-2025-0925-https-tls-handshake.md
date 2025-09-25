@@ -6,8 +6,6 @@ tags: ["HTTPS", "TLS", "SSL", "加密", "网络安全", "握手协议"]
 category: "backend"
 ---
 
-# HTTPS 与 TLS 握手机制深度解析
-
 HTTPS（HTTP Secure）是 HTTP 协议的安全版本，通过 TLS（Transport Layer Security）协议提供加密、身份验证和数据完整性保护。本文将深入分析 TLS 握手过程和相关安全机制。
 
 ## 目录

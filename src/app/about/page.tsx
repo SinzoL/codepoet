@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 export default function About() {
   return (
@@ -57,10 +58,13 @@ export default function About() {
                 <div className="flex flex-col lg:flex-row items-center gap-8">
                   <div className="lg:w-1/3 flex justify-center">
                     <div className="relative">
-                      <img 
+                      <Image 
                         src="/Henryk_sienkiewicz.png" 
                         alt="Henryk Sienkiewicz - 诺贝尔文学奖得主" 
+                        width={192}
+                        height={256}
                         className="w-48 h-64 object-cover rounded-lg shadow-lg border-4 border-white"
+                        priority
                       />
                     </div>
                   </div>
