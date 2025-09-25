@@ -1,4 +1,7 @@
 {
+  "version": 2,
+  "name": "codepoet",
+  "alias": ["codepoet.vercel.app"],
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
@@ -6,6 +9,14 @@
     "src/app/**/*.tsx": {
       "maxDuration": 10
     }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "autoAlias": false
   },
   "headers": [
     {
