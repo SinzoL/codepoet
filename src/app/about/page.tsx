@@ -2,6 +2,37 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Image from 'next/image';
 
+// SVG 图标组件
+const RunningIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>
+  </svg>
+);
+
+const SudokuIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-2h2v2zm0-4H7v-2h2v2zm0-4H7V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/>
+  </svg>
+);
+
+const BookIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+  </svg>
+);
+
+const ThinkingIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-2V2c0-.55-.45-1-1-1s-1 .45-1 1v2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/>
+  </svg>
+);
+
+const AuthorIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+  </svg>
+);
+
 export default function About() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -16,15 +47,17 @@ export default function About() {
             
             <div className="prose prose-lg max-w-none">
               <p className="text-xl text-gray-600 mb-8">
-                你好，我是 SinzoL，一个热爱挑战的程序员。
+                你好，我是 SinzoL，我来自哈尔滨工业大学（深圳）。
               </p>
               
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的爱好</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="bg-blue-50 p-6 rounded-lg">
                   <div className="flex items-center mb-3">
-                    <span className="text-2xl mr-3">🏃‍♂️</span>
-                    <h3 className="font-semibold text-blue-900">马拉松</h3>
+                    <div className="text-blue-600 mr-3">
+                      <RunningIcon className="w-8 h-8" />
+                    </div>
+                    <h4 className="font-semibold text-blue-900">马拉松</h4>
                   </div>
                   <p className="text-blue-700">
                     享受在跑道上挥洒汗水的感觉，每一步都是对自己极限的挑战。长跑教会了我坚持和耐力，这些品质在编程中同样重要。
@@ -33,8 +66,10 @@ export default function About() {
                 
                 <div className="bg-green-50 p-6 rounded-lg">
                   <div className="flex items-center mb-3">
-                    <span className="text-2xl mr-3">🧩</span>
-                    <h3 className="font-semibold text-green-900">数独</h3>
+                    <div className="text-green-600 mr-3">
+                      <SudokuIcon className="w-8 h-8" />
+                    </div>
+                    <h4 className="font-semibold text-green-900">数独</h4>
                   </div>
                   <p className="text-green-700">
                     热爱数独游戏中的逻辑推理和数字排列。这种对规律和逻辑的敏感度，让我在算法设计和问题解决上有着独特的思维方式。
@@ -43,8 +78,10 @@ export default function About() {
 
                 <div className="bg-amber-50 p-6 rounded-lg">
                   <div className="flex items-center mb-3">
-                    <span className="text-2xl mr-3">📚</span>
-                    <h3 className="font-semibold text-amber-900">阅读</h3>
+                    <div className="text-amber-600 mr-3">
+                      <BookIcon className="w-8 h-8" />
+                    </div>
+                    <h4 className="font-semibold text-amber-900">阅读</h4>
                   </div>
                   <p className="text-amber-700">
                     热爱文学作品，特别是经典小说。阅读让我在代码之外找到另一个精神世界，文字的力量总能给我带来新的思考和灵感。
@@ -54,7 +91,7 @@ export default function About() {
 
               {/* 阅读展示区域 */}
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-8 rounded-lg mb-8">
-                <h3 className="text-xl font-semibold text-amber-900 mb-6 text-center">我的阅读世界</h3>
+                <h3 className="text-xl font-semibold text-amber-900 mb-6 text-center">我的文学世界</h3>
                 <div className="flex flex-col lg:flex-row items-center gap-8">
                   <div className="lg:w-1/3 flex justify-center">
                     <div className="relative">
@@ -70,14 +107,24 @@ export default function About() {
                   </div>
                   <div className="lg:w-2/3 space-y-4">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
-                      <h4 className="font-semibold text-gray-900 mb-2">📚 最喜欢的作家</h4>
+                      <div className="flex items-center mb-2">
+                        <div className="text-amber-600 mr-3">
+                          <AuthorIcon className="w-8 h-8" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900">最喜欢的作家</h4>
+                      </div>
                       <p className="text-gray-700">
                         <strong>亨利克·显克维支 (Henryk Sienkiewicz)</strong> - 1905年诺贝尔文学奖得主，波兰著名小说家。
                         他的作品《你往何处去》深深震撼了我，展现了人性在历史洪流中的挣扎与光辉。
                       </p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
-                      <h4 className="font-semibold text-gray-900 mb-2">💭 阅读感悟</h4>
+                      <div className="flex items-center mb-2">
+                        <div className="text-amber-600 mr-3">
+                          <ThinkingIcon className="w-8 h-8" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900">阅读感悟</h4>
+                      </div>
                       <p className="text-gray-700">
                         &ldquo;文学是人类精神的镜子，它不仅记录历史，更塑造未来。&rdquo; 
                         每一本好书都是一次心灵的旅行，让我在技术世界之外保持对人文的思考。
@@ -93,9 +140,9 @@ export default function About() {
                 </div>
               </div>
               
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">联系我</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">找到我</h2>
               <p className="text-gray-600 mb-6">
-                如果你也喜欢跑步、数独、阅读，或者对网络安全感兴趣，欢迎和我交流！
+                如果你也喜欢跑步、数独、阅读，欢迎和我交流！
               </p>
               
               {/* 美化的联系方式按钮 */}

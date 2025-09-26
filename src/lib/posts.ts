@@ -10,25 +10,38 @@ const postsDirectory = path.join(process.cwd(), 'posts');
 // 清理 Markdown 语法，返回纯文本
 function cleanMarkdownText(text: string): string {
   return text
+    // 移除代码块标记 (```code```) - 优先处理，避免代码块中的特殊字符干扰
+    .replace(/```[\s\S]*?```/g, ' ')
+    // 移除行内代码 (`code`)
+    .replace(/`([^`]+)`/g, ' ')
+    // 移除 HTML 标签
+    .replace(/<[^>]*>/g, ' ')
     // 移除标题符号 (# ## ### 等)
     .replace(/^#{1,6}\s+/gm, '')
     // 移除粗体和斜体 (**text** *text*)
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
-    // 移除代码块标记 (```code```)
-    .replace(/```[\s\S]*?```/g, '')
-    // 移除行内代码 (`code`)
-    .replace(/`([^`]+)`/g, '$1')
     // 移除链接 [text](url)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     // 移除图片 ![alt](url)
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
     // 移除列表符号 (- * +)
     .replace(/^[\s]*[-*+]\s+/gm, '')
     // 移除数字列表 (1. 2. 3.)
     .replace(/^[\s]*\d+\.\s+/gm, '')
     // 移除引用符号 (>)
     .replace(/^>\s+/gm, '')
+    // 移除 JavaScript 注释 (// 和 /* */)
+    .replace(/\/\/.*$/gm, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    // 移除正则表达式相关的特殊字符序列
+    .replace(/\\\w/g, ' ')
+    .replace(/\[\\s\\S\]/g, ' ')
+    .replace(/\[\^[^\]]*\]/g, ' ')
+    // 移除其他常见的正则表达式符号
+    .replace(/[\\$^*+?.()|[\]{}]/g, ' ')
+    // 移除多余的空白字符
+    .replace(/\s+/g, ' ')
     // 移除多余的空行
     .replace(/\n\s*\n/g, '\n')
     // 移除行首行尾空白
