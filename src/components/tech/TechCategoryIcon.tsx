@@ -1,18 +1,18 @@
 import React from 'react';
 
-interface CategoryIconProps {
-  categoryId: string;
+interface TechCategoryIconProps {
+  techCategoryId: string;
   className?: string;
 }
 
-export default function CategoryIcon({ categoryId, className = "w-4 h-4" }: CategoryIconProps) {
+export default function TechCategoryIcon({ techCategoryId, className = "w-4 h-4" }: TechCategoryIconProps) {
   const iconProps = {
     className,
     fill: "currentColor",
     viewBox: "0 0 24 24"
   };
 
-  switch (categoryId) {
+  switch (techCategoryId) {
     case 'website':
       return (
         <svg {...iconProps}>

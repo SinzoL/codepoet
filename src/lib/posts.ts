@@ -5,7 +5,7 @@ import { remark } from 'remark';
 import html from 'remark-html';
 import remarkGfm from 'remark-gfm';
 
-const postsDirectory = path.join(process.cwd(), 'posts');
+const postsDirectory = path.join(process.cwd(), 'posts/tech');
 
 // 清理 Markdown 语法，返回纯文本
 function cleanMarkdownText(text: string): string {
@@ -56,11 +56,11 @@ export interface PostData {
   content?: string;
   tags?: string[];
   author?: string;
-  category?: string;
+  techCategory?: string;
 }
 
-// 递归读取所有子文件夹中的 markdown 文件
-function getAllMarkdownFiles(dir: string, fileList: { filePath: string; id: string; category: string }[] = []): { filePath: string; id: string; category: string }[] {
+// 递归读取技术文章目录中的 markdown 文件
+function getAllMarkdownFiles(dir: string, fileList: { filePath: string; id: string; techCategory: string }[] = []): { filePath: string; id: string; techCategory: string }[] {
   if (!fs.existsSync(dir)) {
     return fileList;
   }
@@ -72,17 +72,17 @@ function getAllMarkdownFiles(dir: string, fileList: { filePath: string; id: stri
     const stat = fs.statSync(filePath);
     
     if (stat.isDirectory()) {
-      // 递归读取子文件夹
+      // 递归读取子文件夹（现在只读取 posts/tech 下的技术分类）
       getAllMarkdownFiles(filePath, fileList);
     } else if (file.endsWith('.md')) {
       // 生成唯一的 id，包含文件夹路径信息
       const relativePath = path.relative(postsDirectory, filePath);
       const pathParts = relativePath.split(path.sep);
-      const category = pathParts.length > 1 ? pathParts[0] : 'general';
+      const techCategory = pathParts.length > 1 ? pathParts[0] : 'general';
       const fileName = pathParts[pathParts.length - 1];
       const id = relativePath.replace(/\.md$/, '').replace(/\//g, '-').replace(/\\/g, '-');
       
-      fileList.push({ filePath, id, category });
+      fileList.push({ filePath, id, techCategory });
     }
   });
   
@@ -93,7 +93,7 @@ export function getSortedPostsData(): PostData[] {
   // 获取所有 markdown 文件
   const allFiles = getAllMarkdownFiles(postsDirectory);
   
-  const allPostsData = allFiles.map(({ filePath, id, category }) => {
+  const allPostsData = allFiles.map(({ filePath, id, techCategory }) => {
     try {
       // 读取 markdown 文件内容
       const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -113,7 +113,7 @@ export function getSortedPostsData(): PostData[] {
         excerpt: matterResult.data.excerpt || autoExcerpt,
         tags: matterResult.data.tags || [],
         author: matterResult.data.author || '匿名',
-        category: matterResult.data.category || category,
+        techCategory: matterResult.data.techCategory || techCategory,
       };
     } catch (error) {
       console.error(`Error reading file ${filePath}:`, error);
@@ -172,11 +172,11 @@ export async function getPostData(id: string): Promise<PostData> {
     excerpt: matterResult.data.excerpt || autoExcerpt,
     tags: matterResult.data.tags || [],
     author: matterResult.data.author || '匿名',
-    category: matterResult.data.category || fileInfo.category,
+    techCategory: matterResult.data.techCategory || fileInfo.techCategory,
   };
 }
 
-export function getPostsByCategory(categoryId: string): PostData[] {
+export function getPostsByTechCategory(techCategoryId: string): PostData[] {
   const allPosts = getSortedPostsData();
-  return allPosts.filter(post => post.category === categoryId);
+  return allPosts.filter(post => post.techCategory === techCategoryId);
 }

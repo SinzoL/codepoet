@@ -4,15 +4,15 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { PostData } from '@/lib/posts';
-import { getCategoryById } from '@/lib/categories';
-import CategoryIcon from './CategoryIcon';
+import { getTechCategoryById } from '@/lib/tech';
+import TechCategoryIcon from './tech/TechCategoryIcon';
 
 interface PostCardProps {
   post: PostData;
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const category = getCategoryById(post.category || 'stories');
+  const techCategory = getTechCategoryById(post.techCategory || 'frontend');
   
   return (
     <Link href={`/posts/${post.id}`} className="block group">
@@ -26,17 +26,17 @@ export default function PostCard({ post }: PostCardProps) {
               <span className="mx-2">•</span>
               <span>{post.author}</span>
             </div>
-            {category && (
+            {techCategory && (
               <div 
-                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${category.color} group-hover:opacity-80 transition-opacity`}
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${techCategory.color} group-hover:opacity-80 transition-opacity`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  window.location.href = `/categories/${category.id}`;
+                  window.location.href = `/tech/${techCategory.id}`;
                 }}
               >
-                <CategoryIcon categoryId={category.id} className="w-3 h-3 mr-1" />
-                {category.name}
+                <TechCategoryIcon techCategoryId={techCategory.id} className="w-3 h-3 mr-1" />
+                {techCategory.name}
               </div>
             )}
           </div>

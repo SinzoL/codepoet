@@ -2,9 +2,33 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // 判断当前路径是否匹配导航项
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
+
+  // 获取桌面端导航项样式
+  const getNavLinkClass = (path: string) => {
+    const baseClass = "text-gray-700 hover:text-blue-600 transition-colors";
+    const activeClass = "text-blue-600 font-semibold border-b-2 border-blue-600 pb-1";
+    return isActive(path) ? `${baseClass} ${activeClass}` : baseClass;
+  };
+
+  // 获取移动端导航项样式
+  const getMobileNavLinkClass = (path: string) => {
+    const baseClass = "block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors rounded-md";
+    const activeClass = "text-blue-600 bg-blue-50 font-semibold";
+    return isActive(path) ? `${baseClass} ${activeClass}` : baseClass;
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -26,13 +50,16 @@ export default function Header() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/" className={getNavLinkClass('/')}>
               首页
             </Link>
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors">
-              分类
+            <Link href="/tech" className={getNavLinkClass('/tech')}>
+              技术
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/essays" className={getNavLinkClass('/essays')}>
+              随笔
+            </Link>
+            <Link href="/about" className={getNavLinkClass('/about')}>
               关于
             </Link>
           </nav>
@@ -61,21 +88,28 @@ export default function Header() {
             <nav className="py-4 space-y-2">
               <Link 
                 href="/" 
-                className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors rounded-md"
+                className={getMobileNavLinkClass('/')}
                 onClick={closeMenu}
               >
                 首页
               </Link>
               <Link 
-                href="/categories" 
-                className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors rounded-md"
+                href="/tech" 
+                className={getMobileNavLinkClass('/tech')}
                 onClick={closeMenu}
               >
-                分类
+                技术
+              </Link>
+              <Link 
+                href="/essays" 
+                className={getMobileNavLinkClass('/essays')}
+                onClick={closeMenu}
+              >
+                随笔
               </Link>
               <Link 
                 href="/about" 
-                className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors rounded-md"
+                className={getMobileNavLinkClass('/about')}
                 onClick={closeMenu}
               >
                 关于

@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import MarkdownContent from '@/components/MarkdownContent';
 import BackButton from '@/components/BackButton';
 import TableOfContents from '@/components/TableOfContents';
-import Link from 'next/link';
+
 
 interface PostPageProps {
   params: Promise<{
@@ -36,7 +36,7 @@ export default async function Post({ params }: PostPageProps) {
             <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
               {/* Article Header */}
               <div className="px-6 py-8 sm:px-8">
-                <BackButton postCategory={postData.category} />
+                <BackButton postTechCategory={postData.techCategory} />
                 
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                   {postData.title}

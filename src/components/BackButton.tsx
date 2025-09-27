@@ -1,14 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+
 import { useEffect, useState } from 'react';
 
 interface BackButtonProps {
-  postCategory?: string;
+  postTechCategory?: string;
 }
 
-export default function BackButton({ postCategory }: BackButtonProps) {
+export default function BackButton({ postTechCategory }: BackButtonProps) {
   const router = useRouter();
   const [backUrl, setBackUrl] = useState('/');
   const [backText, setBackText] = useState('返回');
@@ -21,20 +21,20 @@ export default function BackButton({ postCategory }: BackButtonProps) {
       const referrerUrl = new URL(referrer);
       const pathname = referrerUrl.pathname;
       
-      // 如果来自分类页面
-      if (pathname === '/categories') {
-        setBackUrl('/categories');
-        setBackText('返回分类列表');
+      // 如果来自技术分类页面
+      if (pathname === '/tech') {
+        setBackUrl('/tech');
+        setBackText('返回技术分类');
       }
-      // 如果来自具体分类页面
-      else if (pathname.startsWith('/categories/') && postCategory) {
-        const categoryId = pathname.split('/categories/')[1];
-        if (categoryId === postCategory) {
-          setBackUrl(`/categories/${categoryId}`);
-          setBackText(`返回${getCategoryName(categoryId)}分类`);
+      // 如果来自具体技术分类页面
+      else if (pathname.startsWith('/tech/') && postTechCategory) {
+        const techCategoryId = pathname.split('/tech/')[1];
+        if (techCategoryId === postTechCategory) {
+          setBackUrl(`/tech/${techCategoryId}`);
+          setBackText(`返回${getTechCategoryName(techCategoryId)}分类`);
         } else {
-          setBackUrl('/categories');
-          setBackText('返回分类列表');
+          setBackUrl('/tech');
+          setBackText('返回技术分类');
         }
       }
       // 如果来自首页
@@ -42,20 +42,20 @@ export default function BackButton({ postCategory }: BackButtonProps) {
         setBackUrl('/');
         setBackText('返回');
       }
-      // 其他情况，检查是否有分类信息
-      else if (postCategory) {
-        setBackUrl(`/categories/${postCategory}`);
-        setBackText(`返回${getCategoryName(postCategory)}分类`);
+      // 其他情况，检查是否有技术分类信息
+      else if (postTechCategory) {
+        setBackUrl(`/tech/${postTechCategory}`);
+        setBackText(`返回${getTechCategoryName(postTechCategory)}分类`);
       }
-    } else if (postCategory) {
-      // 没有 referrer 但有分类信息
-      setBackUrl(`/categories/${postCategory}`);
-      setBackText(`返回${getCategoryName(postCategory)}分类`);
+    } else if (postTechCategory) {
+      // 没有 referrer 但有技术分类信息
+      setBackUrl(`/tech/${postTechCategory}`);
+      setBackText(`返回${getTechCategoryName(postTechCategory)}分类`);
     }
-  }, [postCategory]);
+  }, [postTechCategory]);
 
-  const getCategoryName = (categoryId: string): string => {
-    const categoryNames: { [key: string]: string } = {
+  const getTechCategoryName = (techCategoryId: string): string => {
+    const techCategoryNames: { [key: string]: string } = {
       'website': '建站',
       'frontend': '前端',
       'security': '安全',
@@ -63,7 +63,7 @@ export default function BackButton({ postCategory }: BackButtonProps) {
       'fun': '趣事',
       'ctf': 'CTF'
     };
-    return categoryNames[categoryId] || '未知';
+    return techCategoryNames[techCategoryId] || '未知';
   };
 
   const handleBack = (e: React.MouseEvent) => {
