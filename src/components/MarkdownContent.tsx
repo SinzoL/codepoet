@@ -22,51 +22,69 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
   useEffect(() => {
     if (!contentRef.current) return;
 
-    // 用 Prism 就地高亮代码块，避免多根渲染/水合问题
+    // 恢复 Prism 代码高亮功能
     (async () => {
-      const { default: Prism } = await import('prismjs'); // PrismStatic
+      try {
+        const { default: Prism } = await import('prismjs');
+        
+        // 预加载常用语言组件
+        await Promise.allSettled([
+          import('prismjs/components/prism-javascript'),
+          import('prismjs/components/prism-typescript'),
+          import('prismjs/components/prism-jsx'),
+          import('prismjs/components/prism-tsx'),
+          import('prismjs/components/prism-css'),
+          import('prismjs/components/prism-json'),
+          import('prismjs/components/prism-bash'),
+          import('prismjs/components/prism-python'),
+        ]);
 
-      const codeBlocks = contentRef.current!.querySelectorAll('pre code');
+        const codeBlocks = contentRef.current!.querySelectorAll('pre code');
 
-      codeBlocks.forEach(async (codeBlock) => {
-        const pre = codeBlock.parentElement as HTMLElement | null;
-        if (!pre) return;
+        codeBlocks.forEach((codeBlock) => {
+          const pre = codeBlock.parentElement as HTMLElement | null;
+          if (!pre) return;
 
-        const className = codeBlock.className || '';
-        const languageMatch = className.match(/language-(\w+)/);
-        const language = languageMatch ? languageMatch[1] : 'text';
+          // 轻量样式，保持与原有视觉一致
+          pre.style.backgroundColor = '#f6f8fa';
+          pre.style.border = '1px solid #e1e4e8';
+          pre.style.borderRadius = '0.5rem';
+          pre.style.padding = '1rem';
+          pre.style.margin = '1.5rem 0';
+          pre.style.overflow = 'auto';
 
-        // 按需加载语言组件（忽略失败）
-        if (language && language !== 'text') {
+          (codeBlock as HTMLElement).style.fontSize = '0.875rem';
+          (codeBlock as HTMLElement).style.lineHeight = '1.5';
+          (codeBlock as HTMLElement).style.fontFamily =
+            'var(--font-geist-mono), Consolas, Monaco, monospace';
+
           try {
-            await import(
-              /* @vite-ignore */
-              `prismjs/components/prism-${language}`
-            );
+            Prism.highlightElement(codeBlock as Element);
           } catch {
-            // 忽略不支持语言的错误
+            // 容错：高亮失败则保留原文本
           }
-        }
+        });
+      } catch (error) {
+        console.warn('Prism.js loading failed, using fallback styles');
+        // 如果Prism加载失败，至少应用基本样式
+        const codeBlocks = contentRef.current!.querySelectorAll('pre code');
+        codeBlocks.forEach((codeBlock) => {
+          const pre = codeBlock.parentElement as HTMLElement | null;
+          if (!pre) return;
 
-        // 轻量样式，保持与原有视觉一致
-        pre.style.backgroundColor = '#f6f8fa';
-        pre.style.border = '1px solid #e1e4e8';
-        pre.style.borderRadius = '0.5rem';
-        pre.style.padding = '1rem';
-        pre.style.margin = '1.5rem 0';
-        pre.style.overflow = 'auto';
+          pre.style.backgroundColor = '#f6f8fa';
+          pre.style.border = '1px solid #e1e4e8';
+          pre.style.borderRadius = '0.5rem';
+          pre.style.padding = '1rem';
+          pre.style.margin = '1.5rem 0';
+          pre.style.overflow = 'auto';
 
-        (codeBlock as HTMLElement).style.fontSize = '0.875rem';
-        (codeBlock as HTMLElement).style.lineHeight = '1.5';
-        (codeBlock as HTMLElement).style.fontFamily =
-          'var(--font-geist-mono), Consolas, Monaco, monospace';
-
-        try {
-          Prism.highlightElement(codeBlock as Element);
-        } catch {
-          // 容错：高亮失败则保留原文本
-        }
-      });
+          (codeBlock as HTMLElement).style.fontSize = '0.875rem';
+          (codeBlock as HTMLElement).style.lineHeight = '1.5';
+          (codeBlock as HTMLElement).style.fontFamily =
+            'var(--font-geist-mono), Consolas, Monaco, monospace';
+        });
+      }
     })();
 
     // 为标题添加 ID 属性
@@ -94,6 +112,92 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
       // 添加样式类
       const level = parseInt(heading.tagName.charAt(1));
       heading.className = getHeadingClass(level);
+    });
+
+    // 直接为表格元素添加样式，避免使用prose类影响代码高亮
+    const tables = contentRef.current.querySelectorAll('table');
+    tables.forEach((table) => {
+      // 表格样式
+      (table as HTMLElement).style.width = '100%';
+      (table as HTMLElement).style.tableLayout = 'auto';
+      (table as HTMLElement).style.textAlign = 'left';
+      (table as HTMLElement).style.marginTop = '2em';
+      (table as HTMLElement).style.marginBottom = '2em';
+      (table as HTMLElement).style.fontSize = '0.875rem';
+      (table as HTMLElement).style.lineHeight = '1.7142857';
+      (table as HTMLElement).style.borderCollapse = 'collapse';
+      (table as HTMLElement).style.border = '1px solid #e5e7eb';
+      (table as HTMLElement).style.borderRadius = '0.5rem';
+      (table as HTMLElement).style.overflow = 'hidden';
+
+      // 表头样式
+      const thead = table.querySelector('thead');
+      if (thead) {
+        (thead as HTMLElement).style.backgroundColor = '#f9fafb';
+        (thead as HTMLElement).style.borderBottom = '1px solid #e5e7eb';
+        
+        const ths = thead.querySelectorAll('th');
+        ths.forEach((th, index) => {
+          (th as HTMLElement).style.color = '#111827';
+          (th as HTMLElement).style.fontWeight = '600';
+          (th as HTMLElement).style.verticalAlign = 'bottom';
+          (th as HTMLElement).style.padding = '0.75rem 1rem';
+          if (index < ths.length - 1) {
+            (th as HTMLElement).style.borderRight = '1px solid #e5e7eb';
+          }
+        });
+      }
+
+      // 表体样式
+      const tbody = table.querySelector('tbody');
+      if (tbody) {
+        const trs = tbody.querySelectorAll('tr');
+        trs.forEach((tr, trIndex) => {
+          if (trIndex < trs.length - 1) {
+            (tr as HTMLElement).style.borderBottom = '1px solid #f3f4f6';
+          }
+          
+          // 悬停效果
+          tr.addEventListener('mouseenter', () => {
+            (tr as HTMLElement).style.backgroundColor = '#f9fafb';
+          });
+          tr.addEventListener('mouseleave', () => {
+            (tr as HTMLElement).style.backgroundColor = '';
+          });
+
+          const tds = tr.querySelectorAll('td');
+          tds.forEach((td, tdIndex) => {
+            (td as HTMLElement).style.verticalAlign = 'baseline';
+            (td as HTMLElement).style.padding = '0.75rem 1rem';
+            if (tdIndex < tds.length - 1) {
+              (td as HTMLElement).style.borderRight = '1px solid #f3f4f6';
+            }
+          });
+        });
+      }
+    });
+
+    // 直接为列表元素添加样式
+    const uls = contentRef.current.querySelectorAll('ul');
+    uls.forEach((ul) => {
+      (ul as HTMLElement).style.listStyleType = 'disc';
+      (ul as HTMLElement).style.marginTop = '1.25rem';
+      (ul as HTMLElement).style.marginBottom = '1.25rem';
+      (ul as HTMLElement).style.paddingLeft = '1.625rem';
+    });
+
+    const ols = contentRef.current.querySelectorAll('ol');
+    ols.forEach((ol) => {
+      (ol as HTMLElement).style.listStyleType = 'decimal';
+      (ol as HTMLElement).style.marginTop = '1.25rem';
+      (ol as HTMLElement).style.marginBottom = '1.25rem';
+      (ol as HTMLElement).style.paddingLeft = '1.625rem';
+    });
+
+    const lis = contentRef.current.querySelectorAll('li');
+    lis.forEach((li) => {
+      (li as HTMLElement).style.marginTop = '0.5rem';
+      (li as HTMLElement).style.marginBottom = '0.5rem';
     });
   }, [content]);
 

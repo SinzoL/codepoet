@@ -194,3 +194,65 @@
   box-shadow: none;
   border-radius: 0;
 }
+
+/* 表格样式 */
+.prose table {
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  font-size: 0.875rem;
+  line-height: 1.7142857;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.prose thead {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.prose thead th {
+  color: #111827;
+  font-weight: 600;
+  vertical-align: bottom;
+  padding: 0.75rem 1rem;
+  border-right: 1px solid #e5e7eb;
+}
+
+.prose thead th:last-child {
+  border-right: none;
+}
+
+.prose tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.prose tbody tr:last-child {
+  border-bottom: none;
+}
+
+.prose tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.prose tbody td {
+  vertical-align: baseline;
+  padding: 0.75rem 1rem;
+  border-right: 1px solid #f3f4f6;
+}
+
+.prose tbody td:last-child {
+  border-right: none;
+}
+
+.prose th {
+  position: relative;
+}
+
+.prose td {
+  position: relative;
+}
