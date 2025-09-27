@@ -57,6 +57,8 @@ export interface PostData {
   tags?: string[];
   author?: string;
   techCategory?: string;
+  coverImage?: string;
+  readingTime?: string;
 }
 
 // 递归读取技术文章目录中的 markdown 文件
@@ -79,7 +81,6 @@ function getAllMarkdownFiles(dir: string, fileList: { filePath: string; id: stri
       const relativePath = path.relative(postsDirectory, filePath);
       const pathParts = relativePath.split(path.sep);
       const techCategory = pathParts.length > 1 ? pathParts[0] : 'general';
-      const fileName = pathParts[pathParts.length - 1];
       const id = relativePath.replace(/\.md$/, '').replace(/\//g, '-').replace(/\\/g, '-');
       
       fileList.push({ filePath, id, techCategory });
@@ -114,6 +115,8 @@ export function getSortedPostsData(): PostData[] {
         tags: matterResult.data.tags || [],
         author: matterResult.data.author || '匿名',
         techCategory: matterResult.data.techCategory || techCategory,
+        coverImage: matterResult.data.coverImage,
+        readingTime: matterResult.data.readingTime,
       };
     } catch (error) {
       console.error(`Error reading file ${filePath}:`, error);
@@ -173,6 +176,8 @@ export async function getPostData(id: string): Promise<PostData> {
     tags: matterResult.data.tags || [],
     author: matterResult.data.author || '匿名',
     techCategory: matterResult.data.techCategory || fileInfo.techCategory,
+    coverImage: matterResult.data.coverImage,
+    readingTime: matterResult.data.readingTime,
   };
 }
 

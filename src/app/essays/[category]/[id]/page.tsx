@@ -5,24 +5,40 @@ import MarkdownContent from '@/components/MarkdownContent';
 import TableOfContents from '@/components/TableOfContents';
 import EssayTypeIcon from '@/components/essays/EssayTypeIcon';
 import Link from 'next/link';
-import { getEssayData, getSortedEssaysData, essayTypes } from '@/lib/essays';
+import { getEssayData, getEssaysByCategory, essayTypes } from '@/lib/essays';
 
 interface EssayPageProps {
   params: Promise<{
+    category: string;
     id: string;
   }>;
 }
 
 export async function generateStaticParams() {
-  const essays = getSortedEssaysData();
-  return essays.map((essay) => ({
-    id: essay.id,
-  }));
+  const allParams: { category: string; id: string }[] = [];
+  
+  // 为每个分类生成参数
+  essayTypes.forEach(type => {
+    const categoryEssays = getEssaysByCategory(type.id);
+    categoryEssays.forEach(essay => {
+      // essay.id 格式是 "category/filename"，我们需要提取 filename
+      const filename = essay.id.split('/')[1];
+      allParams.push({
+        category: type.id,
+        id: filename,
+      });
+    });
+  });
+  
+  return allParams;
 }
 
 export default async function EssayPage({ params }: EssayPageProps) {
-  const { id } = await params;
-  const essay = await getEssayData(id);
+  const { category, id } = await params;
+  
+  // 构建完整的 essay ID
+  const fullId = `${category}/${id}`;
+  const essay = await getEssayData(fullId);
   
   if (!essay) {
     notFound();
@@ -36,16 +52,22 @@ export default async function EssayPage({ params }: EssayPageProps) {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 面包屑导航 */}
-        <div className="mb-6">
+        <div className="mb-6 flex items-center space-x-2 text-sm">
           <Link
             href="/essays"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            className="text-blue-600 hover:text-blue-800 transition-colors"
           >
-            <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回随笔
+            随笔
           </Link>
+          <span className="text-gray-400">/</span>
+          <Link
+            href={`/essays/${category}`}
+            className="text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            {type?.name}
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-600">{essay.title}</span>
         </div>
 
         <div className="flex gap-8">
@@ -58,9 +80,12 @@ export default async function EssayPage({ params }: EssayPageProps) {
                   <div className="mr-3">
                     <EssayTypeIcon type={essay.type} className="w-8 h-8" />
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${type?.color}`}>
+                  <Link
+                    href={`/essays/${category}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${type?.color} hover:opacity-80 transition-opacity`}
+                  >
                     {type?.name}
-                  </span>
+                  </Link>
                 </div>
                 
                 <h1 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
@@ -109,16 +134,26 @@ export default async function EssayPage({ params }: EssayPageProps) {
               </div>
             </article>
 
-            {/* 返回按钮 */}
-            <div className="mt-8">
+            {/* 导航按钮 */}
+            <div className="mt-8 flex justify-between">
               <Link
-                href="/essays"
+                href={`/essays/${category}`}
                 className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
               >
                 <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
+                返回{type?.name}
+              </Link>
+              
+              <Link
+                href="/essays"
+                className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              >
                 返回随笔列表
+                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
           </div>

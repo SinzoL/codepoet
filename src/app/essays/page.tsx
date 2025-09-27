@@ -28,23 +28,26 @@ export default function Essays() {
         {/* 随笔类型 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
           {typeStats.map((type) => (
-            <div
+            <Link
               key={type.id}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 text-center"
+              href={`/essays/${type.id}`}
+              className="group"
             >
-              <div className="mb-3 flex justify-center">
-                <EssayTypeIcon type={type.id} className="w-12 h-12" />
+              <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6 text-center cursor-pointer transform hover:-translate-y-1">
+                <div className="mb-3 flex justify-center">
+                  <EssayTypeIcon type={type.id} className="w-12 h-12" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
+                  {type.name}
+                </h3>
+                <p className="text-gray-600 text-sm mb-3">
+                  {type.description}
+                </p>
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${type.color}`}>
+                  {type.count} 篇
+                </span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {type.name}
-              </h3>
-              <p className="text-gray-600 text-sm mb-3">
-                {type.description}
-              </p>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${type.color}`}>
-                {type.count} 篇
-              </span>
-            </div>
+            </Link>
           ))}
         </div>
 

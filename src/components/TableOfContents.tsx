@@ -26,7 +26,7 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('');
   const [isScrolling, setIsScrolling] = useState<boolean>(false); // 标记是否正在程序化滚动
   const [targetId, setTargetId] = useState<string>(''); // 记录目标ID
-  const [isUserScrolling, setIsUserScrolling] = useState<boolean>(false); // 标记用户是否正在手动滚动
+  const [, setIsUserScrolling] = useState<boolean>(false); // 标记用户是否正在手动滚动
 
   useEffect(() => {
     // 解析 HTML 内容，提取标题
@@ -37,7 +37,7 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
     const items: TocItem[] = [];
     const usedIds = new Set<string>(); // 用于跟踪已使用的 ID
     
-    headings.forEach((heading, index) => {
+    headings.forEach((heading) => {
       const level = parseInt(heading.tagName.charAt(1));
       const text = heading.textContent || '';
       let id = generateId(text);
