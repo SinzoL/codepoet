@@ -129,17 +129,19 @@ if (process.env.NODE_ENV === 'development') {
 
 **模块包装函数**:
 ```javascript
-// Node.js 实际执行的代码
+// 原始代码：utils.js
+const fs = require('fs');
+exports.readFile = function(path) {
+  return fs.readFileSync(path, 'utf-8');
+};
+
+// Node.js 实际执行时的包装
 (function(exports, require, module, __filename, __dirname) {
-  // 你的模块代码在这里
-  function add(a, b) {
-    return a + b;
-  }
-  
-  module.exports = { add };
-  
-  // 模块代码结束
-});
+  const fs = require('fs');
+  exports.readFile = function(path) {
+    return fs.readFileSync(path, 'utf-8');
+  };
+})(exports, require, module, __filename, __dirname);
 
 // Node.js 提供的参数：
 // exports: 指向 module.exports 的引用
@@ -149,14 +151,14 @@ if (process.env.NODE_ENV === 'development') {
 // __dirname: 当前文件所在目录的绝对路径
 ```
 
-**require 函数实现原理**:
+**require 函数底层实现**:
 ```javascript
-// 简化版 require 实现
+// 简化版 require 实现原理
 function require(modulePath) {
   // 1. 解析模块路径
   const absolutePath = resolveModulePath(modulePath);
   
-  // 2. 检查缓存
+  // 2. 检查缓存 - CommonJS 的关键特性
   if (require.cache[absolutePath]) {
     return require.cache[absolutePath].exports;
   }
@@ -164,42 +166,130 @@ function require(modulePath) {
   // 3. 创建模块对象
   const module = {
     id: absolutePath,
-    exports: {},
+    exports: {},        // 初始为空对象
     loaded: false,
     children: [],
-    parent: null
+    parent: currentModule
   };
   
-  // 4. 缓存模块
+  // 4. 立即缓存模块 - 处理循环依赖
   require.cache[absolutePath] = module;
   
   // 5. 读取文件内容
   const content = fs.readFileSync(absolutePath, 'utf8');
   
-  // 6. 包装并执行模块代码
+  // 6. 包装模块代码
   const wrapper = `(function(exports, require, module, __filename, __dirname) {
     ${content}
   })`;
   
-  const compiledWrapper = vm.runInThisContext(wrapper);
+  // 7. 编译包装函数
+  const compiledWrapper = vm.runInThisContext(wrapper, {
+    filename: absolutePath
+  });
   
-  // 7. 执行模块
-  compiledWrapper.call(
-    module.exports,
-    module.exports,
-    require,
-    module,
-    absolutePath,
-    path.dirname(absolutePath)
-  );
+  // 8. 执行模块 - 同步执行
+  try {
+    compiledWrapper.call(
+      module.exports,    // this 指向
+      module.exports,    // exports 参数
+      require,           // require 参数
+      module,            // module 参数
+      absolutePath,      // __filename 参数
+      path.dirname(absolutePath)  // __dirname 参数
+    );
+  } catch (error) {
+    // 执行失败时从缓存中删除
+    delete require.cache[absolutePath];
+    throw error;
+  }
   
-  // 8. 标记为已加载
+  // 9. 标记为已加载
   module.loaded = true;
   
+  // 10. 返回 exports 对象 - 值拷贝
   return module.exports;
 }
 
 require.cache = {};
+
+// 路径解析实现
+function resolveModulePath(modulePath) {
+  // 1. 绝对路径直接返回
+  if (path.isAbsolute(modulePath)) {
+    return modulePath;
+  }
+  
+  // 2. 相对路径解析
+  if (modulePath.startsWith('./') || modulePath.startsWith('../')) {
+    return path.resolve(path.dirname(currentModule.filename), modulePath);
+  }
+  
+  // 3. 核心模块 (fs, path, http 等)
+  if (isCoreModule(modulePath)) {
+    return modulePath;
+  }
+  
+  // 4. node_modules 查找
+  return resolveNodeModules(modulePath);
+}
+
+function resolveNodeModules(moduleName) {
+  const paths = [];
+  let currentDir = path.dirname(currentModule.filename);
+  
+  // 向上查找 node_modules
+  while (currentDir !== path.dirname(currentDir)) {
+    paths.push(path.join(currentDir, 'node_modules', moduleName));
+    currentDir = path.dirname(currentDir);
+  }
+  
+  // 全局 node_modules
+  paths.push(path.join(process.env.NODE_PATH || '', moduleName));
+  
+  for (const modulePath of paths) {
+    if (fs.existsSync(modulePath)) {
+      return modulePath;
+    }
+  }
+  
+  throw new Error(`Cannot find module '${moduleName}'`);
+}
+```
+
+**CommonJS 的运行机制特点**:
+```javascript
+// 1. 同步加载 - 阻塞执行
+console.log('开始加载模块');
+const math = require('./math'); // 这里会阻塞，直到模块加载完成
+console.log('模块加载完成');
+
+// 2. 运行时解析 - 可以动态 require
+function loadModule(condition) {
+  if (condition) {
+    return require('./module-a');  // 运行时决定加载哪个模块
+  } else {
+    return require('./module-b');
+  }
+}
+
+// 3. 值拷贝 - 导出时复制值
+// counter.js
+let count = 0;
+function increment() { count++; }
+module.exports = { count, increment };  // 导出时 count 的值被复制
+
+// main.js
+const { count, increment } = require('./counter');
+console.log(count);  // 0
+increment();         // 修改了 counter.js 中的 count
+console.log(count);  // 仍然是 0，因为是值拷贝
+
+// 4. 缓存机制 - 模块只执行一次
+// 第一次 require 时执行模块代码
+const moduleA1 = require('./module-a');  // 执行模块代码
+const moduleA2 = require('./module-a');  // 从缓存返回
+console.log(moduleA1 === moduleA2);      // true，同一个对象
 ```
 
 ### CommonJS 的特点
@@ -506,20 +596,367 @@ if (process.env.NODE_ENV === 'development') {
 }
 ```
 
+### ESM 底层实现原理
+
+ESM 的实现完全不同于 CommonJS，它是**静态的、异步的**，基于更复杂的模块加载机制。
+
+**第一阶段：静态分析（Parse）**:
+```javascript
+// 原始 ESM 代码
+import { readFile } from './utils.js';
+import fs from 'fs';
+
+export function processFile(path) {
+  return readFile(path).toUpperCase();
+}
+
+// 引擎的静态分析结果
+const moduleRecord = {
+  // 导入声明 - 编译时确定
+  imports: [
+    { 
+      specifier: './utils.js', 
+      importedNames: ['readFile'],
+      moduleRequest: './utils.js'
+    },
+    { 
+      specifier: 'fs', 
+      importedNames: ['default'],
+      moduleRequest: 'fs'
+    }
+  ],
+  
+  // 导出声明 - 编译时确定
+  exports: [
+    { 
+      exportedName: 'processFile', 
+      localName: 'processFile' 
+    }
+  ],
+  
+  // 模块代码（去除 import/export 声明）
+  code: `
+    function processFile(path) {
+      return readFile(path).toUpperCase();
+    }
+  `,
+  
+  // 模块状态
+  status: 'unlinked',  // unlinked -> linking -> linked -> evaluating -> evaluated
+  environment: null,   // 模块环境记录
+  namespace: null      // 模块命名空间对象
+};
+```
+
+**第二阶段：模块图构建**:
+```javascript
+// 模块图构建器
+class ModuleGraph {
+  constructor() {
+    this.modules = new Map();  // URL -> ModuleRecord
+    this.loading = new Map();  // 正在加载的模块
+  }
+  
+  async loadModule(specifier, referrer) {
+    // 1. 解析模块 URL
+    const moduleURL = await this.resolve(specifier, referrer);
+    
+    // 2. 检查缓存
+    if (this.modules.has(moduleURL)) {
+      return this.modules.get(moduleURL);
+    }
+    
+    // 3. 检查是否正在加载
+    if (this.loading.has(moduleURL)) {
+      return await this.loading.get(moduleURL);
+    }
+    
+    // 4. 开始加载模块
+    const loadingPromise = this._loadModuleInternal(moduleURL);
+    this.loading.set(moduleURL, loadingPromise);
+    
+    try {
+      const moduleRecord = await loadingPromise;
+      this.modules.set(moduleURL, moduleRecord);
+      return moduleRecord;
+    } finally {
+      this.loading.delete(moduleURL);
+    }
+  }
+  
+  async _loadModuleInternal(moduleURL) {
+    // 1. 获取模块源码
+    const source = await this.fetchSource(moduleURL);
+    
+    // 2. 解析模块
+    const moduleRecord = this.parseModule(source, moduleURL);
+    
+    // 3. 递归加载所有依赖
+    const importPromises = moduleRecord.imports.map(async (importDecl) => {
+      const depModule = await this.loadModule(importDecl.specifier, moduleURL);
+      importDecl.module = depModule;  // 建立引用关系
+      return depModule;
+    });
+    
+    await Promise.all(importPromises);
+    
+    return moduleRecord;
+  }
+  
+  parseModule(source, url) {
+    // 使用 JavaScript 引擎的解析器
+    const ast = parseScript(source, { sourceType: 'module' });
+    
+    const imports = [];
+    const exports = [];
+    
+    // 遍历 AST 提取 import/export 声明
+    traverse(ast, {
+      ImportDeclaration(node) {
+        imports.push({
+          specifier: node.source.value,
+          importedNames: node.specifiers.map(spec => spec.imported.name),
+          localNames: node.specifiers.map(spec => spec.local.name)
+        });
+      },
+      
+      ExportNamedDeclaration(node) {
+        if (node.declaration) {
+          // export function foo() {}
+          exports.push({
+            exportedName: node.declaration.id.name,
+            localName: node.declaration.id.name
+          });
+        } else {
+          // export { foo, bar }
+          node.specifiers.forEach(spec => {
+            exports.push({
+              exportedName: spec.exported.name,
+              localName: spec.local.name
+            });
+          });
+        }
+      }
+    });
+    
+    return {
+      url,
+      imports,
+      exports,
+      code: source,
+      status: 'unlinked',
+      environment: null,
+      namespace: null
+    };
+  }
+}
+```
+
+**第三阶段：模块链接（Linking）**:
+```javascript
+// 模块链接器 - 建立实时绑定
+class ModuleLinker {
+  linkModules(moduleGraph) {
+    // 1. 为所有模块创建环境记录
+    for (const [url, module] of moduleGraph.modules) {
+      if (module.status === 'unlinked') {
+        module.environment = this.createModuleEnvironment(module);
+        module.status = 'linking';
+      }
+    }
+    
+    // 2. 解析所有导入/导出绑定
+    for (const [url, module] of moduleGraph.modules) {
+      if (module.status === 'linking') {
+        this.resolveImportBindings(module);
+        module.status = 'linked';
+      }
+    }
+  }
+  
+  createModuleEnvironment(module) {
+    // 创建模块环境记录
+    const environment = new Map();
+    
+    // 为每个导出创建绑定
+    for (const exportDecl of module.exports) {
+      environment.set(exportDecl.localName, {
+        type: 'mutable',
+        value: undefined,
+        initialized: false
+      });
+    }
+    
+    // 为每个导入创建绑定
+    for (const importDecl of module.imports) {
+      for (let i = 0; i < importDecl.importedNames.length; i++) {
+        const localName = importDecl.localNames[i];
+        const importedName = importDecl.importedNames[i];
+        
+        // 创建实时绑定 - ESM 的核心特性
+        environment.set(localName, this.createLiveBinding(
+          importDecl.module, 
+          importedName
+        ));
+      }
+    }
+    
+    return environment;
+  }
+  
+  createLiveBinding(targetModule, exportName) {
+    // ESM 的关键特性：实时绑定（Live Binding）
+    return {
+      type: 'immutable',
+      get value() {
+        const targetEnv = targetModule.environment;
+        const binding = targetEnv.get(exportName);
+        
+        if (!binding.initialized) {
+          throw new ReferenceError(`Cannot access '${exportName}' before initialization`);
+        }
+        
+        return binding.value;
+      },
+      set value(newValue) {
+        throw new TypeError('Assignment to constant variable.');
+      }
+    };
+  }
+  
+  resolveImportBindings(module) {
+    // 解析导入绑定，建立模块间的连接
+    for (const importDecl of module.imports) {
+      const targetModule = importDecl.module;
+      
+      // 确保目标模块已经链接
+      if (targetModule.status === 'unlinked') {
+        this.linkModule(targetModule);
+      }
+      
+      // 验证导入的绑定是否存在
+      for (const importedName of importDecl.importedNames) {
+        if (!targetModule.environment.has(importedName)) {
+          throw new SyntaxError(
+            `The requested module '${targetModule.url}' does not provide an export named '${importedName}'`
+          );
+        }
+      }
+    }
+  }
+}
+```
+
+**第四阶段：模块执行**:
+```javascript
+// 模块执行器
+class ModuleExecutor {
+  async executeModule(module) {
+    if (module.status === 'evaluated') {
+      return module.namespace;
+    }
+    
+    if (module.status === 'evaluating') {
+      // 循环依赖检测
+      throw new Error('Circular dependency detected');
+    }
+    
+    module.status = 'evaluating';
+    
+    try {
+      // 1. 先执行所有依赖模块
+      for (const importDecl of module.imports) {
+        await this.executeModule(importDecl.module);
+      }
+      
+      // 2. 执行当前模块代码
+      await this.evaluateModuleCode(module);
+      
+      // 3. 创建模块命名空间对象
+      module.namespace = this.createNamespaceObject(module);
+      
+      module.status = 'evaluated';
+      return module.namespace;
+      
+    } catch (error) {
+      module.status = 'error';
+      throw error;
+    }
+  }
+  
+  async evaluateModuleCode(module) {
+    // 创建模块执行上下文
+    const moduleFunction = new AsyncFunction(
+      'import', 'export', 'module',
+      this.transformModuleCode(module.code)
+    );
+    
+    // 提供运行时支持
+    const importMeta = {
+      url: module.url,
+      resolve: (specifier) => this.resolve(specifier, module.url)
+    };
+    
+    const exportHelper = {
+      set: (name, value) => {
+        const binding = module.environment.get(name);
+        binding.value = value;
+        binding.initialized = true;
+      }
+    };
+    
+    // 执行模块代码
+    await moduleFunction.call(
+      undefined,  // this 值为 undefined
+      importMeta,
+      exportHelper,
+      module
+    );
+  }
+  
+  createNamespaceObject(module) {
+    // 创建模块命名空间对象
+    const namespace = Object.create(null);
+    
+    // 添加所有导出
+    for (const exportDecl of module.exports) {
+      Object.defineProperty(namespace, exportDecl.exportedName, {
+        get() {
+          const binding = module.environment.get(exportDecl.localName);
+          return binding.value;
+        },
+        enumerable: true,
+        configurable: false
+      });
+    }
+    
+    // 添加 Symbol.toStringTag
+    Object.defineProperty(namespace, Symbol.toStringTag, {
+      value: 'Module',
+      writable: false,
+      enumerable: false,
+      configurable: false
+    });
+    
+    return namespace;
+  }
+}
+```
+
 ### ESM 的特点
 
-**静态分析**:
+**1. 静态分析**:
 ```javascript
-// ✅ 静态导入 - 可以被工具分析
+// ✅ 静态导入 - 编译时确定，可以被工具分析
 import { usedFunction } from './utils.js';
 
-// ❌ 动态导入 - 难以静态分析
+// ❌ 动态导入 - 运行时确定，难以静态分析
 const moduleName = './utils.js';
 import(moduleName).then(module => {
   // 运行时才知道导入了什么
 });
 
-// Tree Shaking 示例
+// Tree Shaking 的基础
 // utils.js
 export function usedFunction() {
   return 'This will be included';
@@ -531,10 +968,10 @@ export function unusedFunction() {
 
 // app.js
 import { usedFunction } from './utils.js';
-// unusedFunction 不会被打包到最终代码中
+// 构建工具可以静态分析出 unusedFunction 未被使用，将其移除
 ```
 
-**活绑定 (Live Binding)**:
+**2. 实时绑定 (Live Binding)**:
 ```javascript
 // counter.js
 export let count = 0;
@@ -543,23 +980,37 @@ export function increment() {
   count++;
 }
 
-export function getCount() {
-  return count;
-}
-
 // app.js
-import { count, increment, getCount } from './counter.js';
+import { count, increment } from './counter.js';
 
 console.log(count); // 0
-increment();
-console.log(count); // 1 (活绑定，值会更新)
-console.log(getCount()); // 1
+increment();        // 修改 counter.js 中的 count
+console.log(count); // 1 - 实时绑定，值会同步更新！
 
-// 注意：不能修改导入的绑定
+// 对比 CommonJS 的值拷贝
+// CommonJS 中这里仍然会是 0
+
+// 注意：导入的绑定是只读的
 // count++; // TypeError: Assignment to constant variable
 ```
 
-**循环依赖处理**:
+**3. 异步加载和执行**:
+```javascript
+// ESM 的异步特性
+async function loadAndUseModule() {
+  // 动态导入返回 Promise
+  const mathModule = await import('./math.js');
+  return mathModule.add(1, 2);
+}
+
+// 顶层 await (Top-level await)
+const config = await import('./config.js');
+const data = await fetch(config.apiUrl);
+
+// 这在 CommonJS 中是不可能的
+```
+
+**4. 循环依赖处理**:
 ```javascript
 // a.js
 import { b } from './b.js';
@@ -573,15 +1024,30 @@ console.log('b.js:', a);
 
 // main.js
 import './a.js';
-// 输出：
-// b.js: undefined (a 还未初始化)
-// a.js: b
 
-// ESM 处理循环依赖的机制：
-// 1. 创建模块记录
-// 2. 解析依赖关系
-// 3. 实例化模块 (创建绑定)
-// 4. 执行模块代码
+// ESM 处理循环依赖的完整流程：
+// 1. 解析阶段：构建模块图，发现循环依赖
+// 2. 链接阶段：创建所有绑定，但不初始化值
+// 3. 执行阶段：按依赖顺序执行，实时绑定确保正确性
+
+// 输出：
+// b.js: undefined (a 的绑定存在但未初始化)
+// a.js: b (b 已经初始化)
+```
+
+**5. 严格模式和作用域**:
+```javascript
+// ESM 自动启用严格模式
+// 'use strict'; // 不需要显式声明
+
+// 顶层 this 为 undefined
+console.log(this); // undefined (不是 global/window)
+
+// 块级作用域
+if (true) {
+  const blockScoped = 'only available in this block';
+}
+// console.log(blockScoped); // ReferenceError
 ```
 
 ## 模块系统对比

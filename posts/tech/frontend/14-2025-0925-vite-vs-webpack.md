@@ -5,1299 +5,216 @@ description: "全面对比 Vite 和 Webpack 两大主流构建工具的架构设
 tags: ["Vite", "Webpack", "构建工具", "性能对比", "前端工程化"]
 ---
 
-## 架构设计对比
+## 核心架构差异
 
-### Webpack 架构原理
+### Webpack：Bundle-based 架构
 
-**Bundle-based 架构**:
-```javascript
-// Webpack 构建流程
-/*
-Entry → Dependency Graph → Loaders → Plugins → Bundle
+Webpack 采用传统的打包架构，在开发阶段就需要将所有模块打包成一个或多个 bundle。其工作流程是：
 
-1. 从入口文件开始
-2. 递归分析依赖关系
-3. 使用 Loader 转换文件
-4. 应用 Plugin 处理资源
-5. 生成最终 Bundle
-*/
+1. **依赖分析**：从入口文件开始，递归分析所有依赖关系，构建完整的依赖图
+2. **模块转换**：使用各种 Loader 将不同类型的文件转换为 JavaScript 模块
+3. **插件处理**：通过 Plugin 系统对资源进行各种处理和优化
+4. **代码生成**：将所有模块打包成最终的 bundle 文件
 
-// webpack.config.js
-module.exports = {
-  entry: './src/index.js',
-  
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        use: 'babel-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      },
-      {
-        test: /\.(png|jpg|gif)$/,
-        use: 'file-loader'
-      }
-    ]
-  },
-  
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './src/index.html'
-    }),
-    new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css'
-    })
-  ],
-  
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
-    }
-  }
-};
+这种架构的特点是**预先打包**，无论是否需要，所有模块都会被处理和打包。
 
-// Webpack 运行时代码示例
-(function(modules) {
-  // webpack bootstrap
-  function __webpack_require__(moduleId) {
-    // 模块缓存
-    if(installedModules[moduleId]) {
-      return installedModules[moduleId].exports;
-    }
-    
-    // 创建新模块
-    var module = installedModules[moduleId] = {
-      i: moduleId,
-      l: false,
-      exports: {}
-    };
-    
-    // 执行模块函数
-    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-    
-    // 标记模块为已加载
-    module.l = true;
-    
-    return module.exports;
-  }
-  
-  // 启动应用
-  return __webpack_require__(__webpack_require__.s = "./src/index.js");
-})({
-  "./src/index.js": function(module, exports, __webpack_require__) {
-    const utils = __webpack_require__("./src/utils.js");
-    // 模块代码
-  },
-  "./src/utils.js": function(module, exports) {
-    // 工具函数
-  }
-});
-```
+### Vite：ESM-based 架构
 
-### Vite 架构原理
+Vite 利用现代浏览器对 ES 模块的原生支持，采用完全不同的架构：
 
-**ESM-based 架构**:
-```javascript
-// Vite 开发流程
-/*
-Entry → ESM Import → Transform on Demand → Browser
+1. **按需加载**：浏览器直接请求需要的模块，服务器按需转换
+2. **原生 ESM**：开发时直接使用浏览器的 import/export，无需打包
+3. **预构建优化**：使用 esbuild 对第三方依赖进行预构建
+4. **生产构建**：使用 Rollup 进行生产环境的打包优化
 
-1. 浏览器直接请求 ESM 模块
-2. 服务器按需转换文件
-3. 利用浏览器原生 ESM 加载
-4. 无需预先打包
-*/
+这种架构实现了**即时启动**和**按需编译**，大幅提升了开发体验。
 
-// vite.config.js
-export default {
-  // 简洁的配置
-  plugins: [vue()],
-  
-  // 开发服务器配置
-  server: {
-    port: 3000,
-    open: true
-  },
-  
-  // 构建配置
-  build: {
-    target: 'es2015',
-    outDir: 'dist',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vue: ['vue'],
-          vendor: ['lodash']
-        }
-      }
-    }
-  }
-};
-
-// Vite 开发服务器处理流程
-class ViteDevServer {
-  async handleRequest(url) {
-    // 1. 解析请求路径
-    const { pathname } = new URL(url, 'http://localhost');
-    
-    // 2. 处理不同类型的请求
-    if (pathname.endsWith('.js') || pathname.endsWith('.ts')) {
-      return this.transformJavaScript(pathname);
-    }
-    
-    if (pathname.endsWith('.vue')) {
-      return this.transformVueSFC(pathname);
-    }
-    
-    if (pathname.endsWith('.css')) {
-      return this.transformCSS(pathname);
-    }
-    
-    // 3. 返回转换后的 ESM 模块
-    return this.serveStaticFile(pathname);
-  }
-  
-  async transformJavaScript(pathname) {
-    const code = await fs.readFile(pathname, 'utf-8');
-    
-    // 转换导入路径
-    const transformedCode = code.replace(
-      /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g,
-      (match, id) => {
-        if (id.startsWith('./') || id.startsWith('../')) {
-          return match; // 相对路径保持不变
-        }
-        // 裸导入转换为预构建路径
-        return match.replace(id, `/node_modules/.vite/${id}.js`);
-      }
-    );
-    
-    return {
-      code: transformedCode,
-      headers: {
-        'Content-Type': 'application/javascript'
-      }
-    };
-  }
-}
-
-// 浏览器中的实际加载
-// index.html
-/*
-<script type="module">
-  import { createApp } from '/node_modules/.vite/vue.js';
-  import App from '/src/App.vue';
-  
-  createApp(App).mount('#app');
-</script>
-*/
-```
-
-## 性能对比分析
+## 性能表现对比
 
 ### 开发环境性能
 
-**冷启动时间对比**:
-```javascript
-// 性能测试数据 (仅供参考)
-const performanceComparison = {
-  coldStart: {
-    // 小型项目 (< 100 模块)
-    small: {
-      webpack: '15-30s',
-      vite: '1-3s',
-      improvement: '5-10x faster'
-    },
-    
-    // 中型项目 (100-500 模块)
-    medium: {
-      webpack: '30-60s',
-      vite: '2-5s',
-      improvement: '10-15x faster'
-    },
-    
-    // 大型项目 (> 500 模块)
-    large: {
-      webpack: '60-120s',
-      vite: '3-8s',
-      improvement: '15-20x faster'
-    }
-  },
-  
-  hotReload: {
-    webpack: '1-5s',
-    vite: '< 100ms',
-    improvement: '10-50x faster'
-  },
-  
-  memoryUsage: {
-    webpack: '200-800MB',
-    vite: '50-200MB',
-    improvement: '2-4x less'
-  }
-};
+**冷启动时间**：
+- **小型项目**：Webpack 15-30秒 vs Vite 1-3秒（5-10倍提升）
+- **中型项目**：Webpack 30-60秒 vs Vite 2-5秒（10-15倍提升）
+- **大型项目**：Webpack 60-120秒 vs Vite 3-8秒（15-20倍提升）
 
-// Webpack 性能瓶颈分析
-class WebpackPerformanceAnalyzer {
-  analyzeBottlenecks(stats) {
-    return {
-      // 1. 依赖解析耗时
-      dependencyResolution: {
-        time: stats.compilation.resolverFactory.time,
-        description: '解析模块路径和依赖关系'
-      },
-      
-      // 2. 模块构建耗时
-      moduleBuild: {
-        time: stats.compilation.modules.reduce((total, module) => {
-          return total + (module.buildTime || 0);
-        }, 0),
-        description: '使用 Loader 转换模块'
-      },
-      
-      // 3. 代码生成耗时
-      codeGeneration: {
-        time: stats.compilation.codeGenerationTime,
-        description: '生成最终代码和 chunk'
-      },
-      
-      // 4. 优化处理耗时
-      optimization: {
-        time: stats.compilation.optimizationTime,
-        description: 'Tree shaking, 代码分割等优化'
-      }
-    };
-  }
-  
-  // Webpack 优化建议
-  getOptimizationSuggestions(analysis) {
-    const suggestions = [];
-    
-    if (analysis.dependencyResolution.time > 5000) {
-      suggestions.push({
-        type: 'resolve',
-        message: '依赖解析耗时过长，建议配置 resolve.modules 和 resolve.alias'
-      });
-    }
-    
-    if (analysis.moduleBuild.time > 10000) {
-      suggestions.push({
-        type: 'loader',
-        message: 'Loader 处理耗时过长，建议使用 cache-loader 或升级到 Webpack 5'
-      });
-    }
-    
-    return suggestions;
-  }
-}
+**热更新速度**：
+- **Webpack**：1-5秒，需要重新打包相关模块
+- **Vite**：<100毫秒，只需重新编译单个模块
 
-// Vite 性能优势分析
-class VitePerformanceAnalyzer {
-  analyzeAdvantages() {
-    return {
-      // 1. 无需预打包
-      noBundling: {
-        advantage: '开发时直接使用 ESM，无需等待打包',
-        impact: '冷启动时间从分钟级降到秒级'
-      },
-      
-      // 2. 按需编译
-      onDemandTransform: {
-        advantage: '只转换浏览器请求的模块',
-        impact: '减少不必要的编译工作'
-      },
-      
-      // 3. esbuild 预构建
-      esbuildPreBuild: {
-        advantage: '使用 Go 编写的 esbuild 处理依赖',
-        impact: '依赖预构建速度提升 10-100 倍'
-      },
-      
-      // 4. 智能缓存
-      smartCache: {
-        advantage: '多层缓存机制，HTTP 缓存 + 文件缓存',
-        impact: '二次启动和模块重新加载更快'
-      }
-    };
-  }
-}
-```
+**内存占用**：
+- **Webpack**：200-800MB，需要在内存中维护完整的依赖图
+- **Vite**：50-200MB，按需处理，内存占用更少
 
 ### 生产构建性能
 
-**构建时间对比**:
-```javascript
-// 构建性能测试
-class BuildPerformanceTest {
-  async runComparison(projectSize) {
-    const webpackResult = await this.testWebpack(projectSize);
-    const viteResult = await this.testVite(projectSize);
-    
-    return {
-      webpack: webpackResult,
-      vite: viteResult,
-      comparison: this.compareResults(webpackResult, viteResult)
-    };
-  }
-  
-  async testWebpack(projectSize) {
-    const startTime = Date.now();
-    
-    // Webpack 构建配置
-    const config = {
-      mode: 'production',
-      entry: './src/index.js',
-      optimization: {
-        minimize: true,
-        splitChunks: {
-          chunks: 'all'
-        }
-      }
-    };
-    
-    const compiler = webpack(config);
-    const stats = await new Promise((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err) reject(err);
-        else resolve(stats);
-      });
-    });
-    
-    return {
-      buildTime: Date.now() - startTime,
-      bundleSize: this.calculateBundleSize(stats),
-      chunkCount: stats.compilation.chunks.size,
-      warnings: stats.compilation.warnings.length,
-      errors: stats.compilation.errors.length
-    };
-  }
-  
-  async testVite(projectSize) {
-    const startTime = Date.now();
-    
-    // Vite 构建
-    const { build } = await import('vite');
-    const result = await build({
-      build: {
-        minify: 'terser',
-        rollupOptions: {
-          output: {
-            manualChunks: this.generateManualChunks()
-          }
-        }
-      }
-    });
-    
-    return {
-      buildTime: Date.now() - startTime,
-      bundleSize: this.calculateViteBundleSize(result),
-      chunkCount: result.output.length,
-      warnings: 0,
-      errors: 0
-    };
-  }
-  
-  compareResults(webpack, vite) {
-    return {
-      buildTimeImprovement: ((webpack.buildTime - vite.buildTime) / webpack.buildTime * 100).toFixed(1) + '%',
-      bundleSizeComparison: vite.bundleSize / webpack.bundleSize,
-      recommendation: this.generateRecommendation(webpack, vite)
-    };
-  }
-}
-
-// 实际测试结果示例
-const testResults = {
-  smallProject: {
-    webpack: { buildTime: 45000, bundleSize: 2.1 }, // 45s, 2.1MB
-    vite: { buildTime: 12000, bundleSize: 1.8 },    // 12s, 1.8MB
-    improvement: '73% faster, 14% smaller'
-  },
-  
-  mediumProject: {
-    webpack: { buildTime: 120000, bundleSize: 8.5 }, // 2min, 8.5MB
-    vite: { buildTime: 35000, bundleSize: 7.2 },     // 35s, 7.2MB
-    improvement: '71% faster, 15% smaller'
-  },
-  
-  largeProject: {
-    webpack: { buildTime: 300000, bundleSize: 25.3 }, // 5min, 25.3MB
-    vite: { buildTime: 85000, bundleSize: 22.1 },     // 1.4min, 22.1MB
-    improvement: '72% faster, 13% smaller'
-  }
-};
-```
+在生产构建方面，两者差距相对较小：
+- **构建时间**：Vite 通常快 20-30%，主要得益于 Rollup 的优化
+- **产物大小**：基本相当，都能实现良好的 Tree Shaking 和代码分割
+- **构建稳定性**：Webpack 更成熟，Vite 在复杂场景下偶有问题
 
 ## 生态系统对比
 
-### Webpack 生态系统
+### Webpack 生态优势
 
-**丰富的 Loader 生态**:
-```javascript
-// Webpack Loader 生态
-const webpackLoaders = {
-  // JavaScript 处理
-  javascript: [
-    'babel-loader',      // ES6+ 转换
-    'ts-loader',         // TypeScript 支持
-    'coffee-loader',     // CoffeeScript 支持
-    'eslint-loader'      // 代码检查
-  ],
-  
-  // CSS 处理
-  css: [
-    'css-loader',        // CSS 模块化
-    'style-loader',      // 样式注入
-    'sass-loader',       // Sass 预处理
-    'less-loader',       // Less 预处理
-    'postcss-loader'     // PostCSS 处理
-  ],
-  
-  // 资源处理
-  assets: [
-    'file-loader',       // 文件处理
-    'url-loader',        // 小文件内联
-    'raw-loader',        // 文本文件
-    'svg-loader'         // SVG 处理
-  ],
-  
-  // 框架支持
-  frameworks: [
-    'vue-loader',        // Vue SFC
-    'react-hot-loader',  // React 热更新
-    'angular-loader'     // Angular 支持
-  ]
-};
+**成熟度高**：
+- 8年+ 的发展历史，生态极其丰富
+- 数千个 Loader 和 Plugin，几乎覆盖所有使用场景
+- 大量企业级项目验证，稳定性有保障
 
-// 复杂的 Webpack 配置示例
-module.exports = {
-  module: {
-    rules: [
-      // JavaScript 处理链
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: [
-          'cache-loader',
-          'thread-loader',
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-              plugins: ['@babel/plugin-transform-runtime']
-            }
-          },
-          'eslint-loader'
-        ]
-      },
-      
-      // CSS 处理链
-      {
-        test: /\.scss$/,
-        use: [
-          process.env.NODE_ENV === 'production' 
-            ? MiniCssExtractPlugin.loader 
-            : 'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              localIdentName: '[name]__[local]--[hash:base64:5]'
-            }
-          },
-          'postcss-loader',
-          'sass-loader'
-        ]
-      },
-      
-      // 资源处理
-      {
-        test: /\.(png|jpe?g|gif|svg)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 8192,
-              name: 'images/[name].[hash:8].[ext]'
-            }
-          },
-          'image-webpack-loader'
-        ]
-      }
-    ]
-  }
-};
+**功能全面**：
+- 支持各种模块格式（CommonJS、AMD、UMD、ESM）
+- 强大的代码分割和懒加载能力
+- Module Federation 支持微前端架构
 
-// Plugin 生态
-const webpackPlugins = [
-  new HtmlWebpackPlugin(),
-  new MiniCssExtractPlugin(),
-  new OptimizeCSSAssetsPlugin(),
-  new TerserPlugin(),
-  new BundleAnalyzerPlugin(),
-  new DefinePlugin(),
-  new ProvidePlugin(),
-  new HotModuleReplacementPlugin()
-];
-```
+**定制性强**：
+- 高度可配置，能满足复杂的构建需求
+- 丰富的优化选项和性能调优手段
 
-### Vite 生态系统
+### Vite 生态特点
 
-**基于 Rollup 的插件系统**:
-```javascript
-// Vite 插件生态
-const vitePlugins = {
-  // 官方插件
-  official: [
-    '@vitejs/plugin-vue',      // Vue 支持
-    '@vitejs/plugin-react',    // React 支持
-    '@vitejs/plugin-legacy'    // 传统浏览器支持
-  ],
-  
-  // 社区插件
-  community: [
-    'vite-plugin-eslint',      // ESLint 集成
-    'vite-plugin-mock',        // API Mock
-    'vite-plugin-pwa',         // PWA 支持
-    'vite-plugin-windicss',    // WindiCSS 支持
-    'unplugin-auto-import',    // 自动导入
-    'unplugin-vue-components'  // 组件自动导入
-  ],
-  
-  // Rollup 插件兼容
-  rollup: [
-    '@rollup/plugin-alias',
-    '@rollup/plugin-commonjs',
-    '@rollup/plugin-node-resolve',
-    '@rollup/plugin-typescript'
-  ]
-};
+**现代化**：
+- 基于现代 Web 标准设计，面向未来
+- 官方插件质量高，社区活跃
+- 与现代框架（Vue 3、React 18）集成度更好
 
-// 简洁的 Vite 配置
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+**简洁高效**：
+- 插件系统基于 Rollup，兼容性好
+- 配置简单，开箱即用体验佳
+- 内置 TypeScript、JSX、CSS 预处理器支持
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    
-    // 自动导入
-    AutoImport({
-      imports: ['vue', 'vue-router'],
-      dts: true
-    }),
-    
-    // 组件自动导入
-    Components({
-      dts: true
-    }),
-    
-    // PWA 支持
-    VitePWA({
-      registerType: 'autoUpdate'
-    })
-  ],
-  
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  },
-  
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: '@import "@/styles/variables.scss";'
-      }
-    }
-  }
-});
-
-// Vite 插件开发示例
-function createCustomPlugin(options = {}) {
-  return {
-    name: 'custom-plugin',
-    
-    // 开发服务器钩子
-    configureServer(server) {
-      server.middlewares.use('/api', (req, res, next) => {
-        // 自定义 API 处理
-      });
-    },
-    
-    // 构建钩子 (Rollup 兼容)
-    transform(code, id) {
-      if (id.endsWith('.special')) {
-        return {
-          code: transformSpecialFile(code),
-          map: null
-        };
-      }
-    },
-    
-    // HMR 钩子
-    handleHotUpdate(ctx) {
-      if (ctx.file.endsWith('.special')) {
-        ctx.server.ws.send({
-          type: 'full-reload'
-        });
-        return [];
-      }
-    }
-  };
-}
-```
+**快速发展**：
+- 社区增长迅速，插件生态日趋完善
+- 得到 Vue 团队和众多开源项目支持
 
 ## 配置复杂度对比
 
-### Webpack 配置复杂性
+### Webpack 配置特点
 
-```javascript
-// 复杂的 Webpack 配置示例
-const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+Webpack 的配置往往比较复杂，一个典型的生产配置可能包含：
+- 200+ 行配置代码
+- 多个 Loader 链式处理
+- 十几个 Plugin 协同工作
+- 复杂的优化和分割策略
 
-module.exports = (env, argv) => {
-  const isProduction = argv.mode === 'production';
-  
-  return {
-    entry: {
-      main: './src/index.js',
-      vendor: ['react', 'react-dom', 'lodash']
-    },
-    
-    output: {
-      path: path.resolve(__dirname, 'dist'),
-      filename: isProduction 
-        ? '[name].[contenthash:8].js' 
-        : '[name].js',
-      chunkFilename: isProduction 
-        ? '[name].[contenthash:8].chunk.js' 
-        : '[name].chunk.js',
-      publicPath: '/',
-      clean: true
-    },
-    
-    resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      alias: {
-        '@': path.resolve(__dirname, 'src'),
-        'components': path.resolve(__dirname, 'src/components')
-      },
-      modules: ['node_modules', path.resolve(__dirname, 'src')]
-    },
-    
-    module: {
-      rules: [
-        {
-          test: /\.(js|jsx|ts|tsx)$/,
-          exclude: /node_modules/,
-          use: [
-            'cache-loader',
-            {
-              loader: 'babel-loader',
-              options: {
-                presets: [
-                  ['@babel/preset-env', { useBuiltIns: 'usage', corejs: 3 }],
-                  '@babel/preset-react',
-                  '@babel/preset-typescript'
-                ],
-                plugins: [
-                  '@babel/plugin-transform-runtime',
-                  ['import', { libraryName: 'antd', style: true }]
-                ]
-              }
-            }
-          ]
-        },
-        
-        {
-          test: /\.css$/,
-          use: [
-            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
-            {
-              loader: 'css-loader',
-              options: {
-                modules: {
-                  localIdentName: '[name]__[local]--[hash:base64:5]'
-                }
-              }
-            },
-            'postcss-loader'
-          ]
-        },
-        
-        {
-          test: /\.less$/,
-          use: [
-            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
-            'css-loader',
-            'postcss-loader',
-            {
-              loader: 'less-loader',
-              options: {
-                lessOptions: {
-                  modifyVars: {
-                    '@primary-color': '#1890ff'
-                  },
-                  javascriptEnabled: true
-                }
-              }
-            }
-          ]
-        },
-        
-        {
-          test: /\.(png|jpe?g|gif|svg)$/,
-          use: [
-            {
-              loader: 'url-loader',
-              options: {
-                limit: 8192,
-                name: 'images/[name].[hash:8].[ext]',
-                fallback: 'file-loader'
-              }
-            }
-          ]
-        }
-      ]
-    },
-    
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: './public/index.html',
-        minify: isProduction ? {
-          removeComments: true,
-          collapseWhitespace: true,
-          removeRedundantAttributes: true
-        } : false
-      }),
-      
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-        'process.env.API_URL': JSON.stringify(process.env.API_URL)
-      }),
-      
-      ...(isProduction ? [
-        new MiniCssExtractPlugin({
-          filename: '[name].[contenthash:8].css',
-          chunkFilename: '[name].[contenthash:8].chunk.css'
-        }),
-        
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'static',
-          openAnalyzer: false
-        })
-      ] : [
-        new webpack.HotModuleReplacementPlugin()
-      ])
-    ],
-    
-    optimization: {
-      minimize: isProduction,
-      minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            compress: {
-              drop_console: true,
-              drop_debugger: true
-            }
-          }
-        }),
-        new OptimizeCSSAssetsPlugin()
-      ],
-      
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 5,
-            reuseExistingChunk: true
-          }
-        }
-      },
-      
-      runtimeChunk: {
-        name: 'runtime'
-      }
-    },
-    
-    devServer: {
-      contentBase: path.join(__dirname, 'dist'),
-      compress: true,
-      port: 3000,
-      hot: true,
-      open: true,
-      historyApiFallback: true,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          pathRewrite: {
-            '^/api': ''
-          }
-        }
-      }
-    },
-    
-    devtool: isProduction ? 'source-map' : 'eval-source-map'
-  };
-};
-```
+学习曲线陡峭，需要深入理解各种概念：entry、output、loader、plugin、optimization 等。
 
-### Vite 配置简洁性
+### Vite 配置特点
 
-```javascript
-// 等效的 Vite 配置
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+Vite 的配置相对简洁：
+- 通常 50 行以内即可完成完整配置
+- 插件化架构，功能模块化
+- 约定优于配置，减少样板代码
+- 配置项语义化，易于理解
 
-export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: [
-          ['import', { libraryName: 'antd', style: true }]
-        ]
-      }
-    })
-  ],
-  
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-      'components': resolve(__dirname, 'src/components')
-    }
-  },
-  
-  css: {
-    preprocessorOptions: {
-      less: {
-        modifyVars: {
-          '@primary-color': '#1890ff'
-        },
-        javascriptEnabled: true
-      }
-    },
-    modules: {
-      localsConvention: 'camelCase'
-    }
-  },
-  
-  server: {
-    port: 3000,
-    open: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  },
-  
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          utils: ['lodash']
-        }
-      }
-    }
-  },
-  
-  define: {
-    'process.env.API_URL': JSON.stringify(process.env.API_URL)
-  }
-});
-
-// 配置复杂度对比
-const configurationComparison = {
-  webpack: {
-    lines: 200,
-    concepts: ['entry', 'output', 'loaders', 'plugins', 'optimization'],
-    learningCurve: 'steep',
-    maintenance: 'high'
-  },
-  
-  vite: {
-    lines: 50,
-    concepts: ['plugins', 'build', 'server'],
-    learningCurve: 'gentle',
-    maintenance: 'low'
-  }
-};
-```
+对新手更友好，可以快速上手并投入开发。
 
 ## 适用场景分析
 
-### 项目类型适配
+### 选择 Vite 的场景
 
-```javascript
-// 技术选型决策矩阵
-class BuildToolSelector {
-  selectTool(projectRequirements) {
-    const {
-      projectSize,
-      teamExperience,
-      legacySupport,
-      buildComplexity,
-      developmentSpeed,
-      customization
-    } = projectRequirements;
-    
-    const webpackScore = this.calculateWebpackScore({
-      projectSize,
-      teamExperience,
-      legacySupport,
-      buildComplexity,
-      customization
-    });
-    
-    const viteScore = this.calculateViteScore({
-      projectSize,
-      developmentSpeed,
-      teamExperience,
-      legacySupport
-    });
-    
-    return {
-      recommendation: webpackScore > viteScore ? 'webpack' : 'vite',
-      scores: { webpack: webpackScore, vite: viteScore },
-      reasoning: this.generateReasoning(projectRequirements)
-    };
-  }
-  
-  calculateWebpackScore(factors) {
-    let score = 0;
-    
-    // 大型项目 Webpack 更稳定
-    if (factors.projectSize === 'large') score += 30;
-    
-    // 团队有 Webpack 经验
-    if (factors.teamExperience.includes('webpack')) score += 25;
-    
-    // 需要复杂构建逻辑
-    if (factors.buildComplexity === 'high') score += 35;
-    
-    // 需要高度自定义
-    if (factors.customization === 'high') score += 20;
-    
-    // 需要支持旧浏览器
-    if (factors.legacySupport) score += 15;
-    
-    return score;
-  }
-  
-  calculateViteScore(factors) {
-    let score = 0;
-    
-    // 新项目或中小型项目
-    if (['small', 'medium'].includes(factors.projectSize)) score += 35;
-    
-    // 重视开发体验
-    if (factors.developmentSpeed === 'high') score += 40;
-    
-    // 团队熟悉现代前端技术
-    if (factors.teamExperience.includes('esm')) score += 20;
-    
-    // 不需要支持旧浏览器
-    if (!factors.legacySupport) score += 25;
-    
-    return score;
-  }
-}
+**新项目开发**：
+- 现代前端框架项目（Vue 3、React、Svelte）
+- 重视开发体验和启动速度
+- 团队技术栈相对现代化
+- 不需要支持过老的浏览器
 
-// 使用场景推荐
-const useCaseRecommendations = {
-  // 新项目推荐 Vite
-  newProject: {
-    tool: 'vite',
-    reasons: [
-      '更快的开发体验',
-      '简洁的配置',
-      '现代化的工具链',
-      '更好的 TypeScript 支持'
-    ]
-  },
-  
-  // 大型企业项目可能选择 Webpack
-  enterpriseProject: {
-    tool: 'webpack',
-    reasons: [
-      '成熟稳定的生态',
-      '丰富的插件和 loader',
-      '复杂构建需求支持',
-      '团队经验积累'
-    ]
-  },
-  
-  // 原型开发推荐 Vite
-  prototyping: {
-    tool: 'vite',
-    reasons: [
-      '快速启动',
-      '即时反馈',
-      '零配置开始',
-      '专注业务逻辑'
-    ]
-  },
-  
-  // 微前端项目可能需要 Webpack
-  microfrontend: {
-    tool: 'webpack',
-    reasons: [
-      'Module Federation 支持',
-      '复杂的代码分割',
-      '运行时模块加载',
-      '成熟的解决方案'
-    ]
-  }
-};
-```
+**原型开发**：
+- 快速验证想法和概念
+- 需要即时反馈的开发环境
+- 小到中型规模的项目
 
-### 迁移策略
+**现代化改造**：
+- 从传统构建工具迁移
+- 提升开发效率和体验
+- 拥抱现代 Web 标准
 
-```javascript
-// Webpack 到 Vite 迁移指南
-class WebpackToViteMigration {
-  async analyzeMigrationFeasibility(webpackConfig) {
-    const analysis = {
-      complexity: this.analyzeComplexity(webpackConfig),
-      compatibility: this.checkCompatibility(webpackConfig),
-      effort: this.estimateEffort(webpackConfig)
-    };
-    
-    return {
-      feasible: analysis.complexity < 7 && analysis.compatibility > 0.8,
-      analysis,
-      migrationPlan: this.generateMigrationPlan(analysis)
-    };
-  }
-  
-  analyzeComplexity(config) {
-    let complexity = 0;
-    
-    // 检查 loader 数量和复杂度
-    const loaders = this.extractLoaders(config);
-    complexity += loaders.length * 0.5;
-    
-    // 检查插件复杂度
-    const plugins = config.plugins || [];
-    complexity += plugins.length * 0.3;
-    
-    // 检查自定义配置
-    if (config.resolve?.alias) complexity += 1;
-    if (config.optimization?.splitChunks) complexity += 2;
-    if (config.devServer?.proxy) complexity += 1;
-    
-    return Math.min(complexity, 10);
-  }
-  
-  checkCompatibility(config) {
-    const incompatibleFeatures = [];
-    
-    // 检查不兼容的 loader
-    const loaders = this.extractLoaders(config);
-    const incompatibleLoaders = loaders.filter(loader => 
-      !this.isViteCompatible(loader)
-    );
-    
-    if (incompatibleLoaders.length > 0) {
-      incompatibleFeatures.push(`不兼容的 loader: ${incompatibleLoaders.join(', ')}`);
-    }
-    
-    // 检查不兼容的插件
-    const plugins = config.plugins || [];
-    const incompatiblePlugins = plugins.filter(plugin => 
-      !this.hasViteEquivalent(plugin)
-    );
-    
-    if (incompatiblePlugins.length > 0) {
-      incompatibleFeatures.push(`需要替换的插件: ${incompatiblePlugins.length} 个`);
-    }
-    
-    return {
-      score: 1 - (incompatibleFeatures.length * 0.2),
-      issues: incompatibleFeatures
-    };
-  }
-  
-  generateMigrationPlan(analysis) {
-    const steps = [];
-    
-    // 第一步：基础迁移
-    steps.push({
-      phase: 1,
-      title: '基础配置迁移',
-      tasks: [
-        '安装 Vite 和相关插件',
-        '创建 vite.config.js',
-        '迁移基础配置 (alias, proxy 等)',
-        '更新 package.json scripts'
-      ],
-      estimatedTime: '1-2 天'
-    });
-    
-    // 第二步：插件和 loader 替换
-    steps.push({
-      phase: 2,
-      title: '插件和处理器迁移',
-      tasks: [
-        '替换 webpack loader 为 vite 插件',
-        '迁移 CSS 预处理器配置',
-        '配置资源处理',
-        '设置环境变量'
-      ],
-      estimatedTime: '2-3 天'
-    });
-    
-    // 第三步：构建优化
-    steps.push({
-      phase: 3,
-      title: '构建配置优化',
-      tasks: [
-        '配置代码分割',
-        '优化依赖预构建',
-        '设置生产构建选项',
-        '性能测试和调优'
-      ],
-      estimatedTime: '1-2 天'
-    });
-    
-    return steps;
-  }
-}
+### 选择 Webpack 的场景
 
-// 迁移配置映射
-const migrationMapping = {
-  // Webpack loader 到 Vite 插件映射
-  loaders: {
-    'babel-loader': '@vitejs/plugin-react 或 @vitejs/plugin-vue',
-    'ts-loader': '内置 TypeScript 支持',
-    'css-loader': '内置 CSS 支持',
-    'sass-loader': '内置 Sass 支持',
-    'file-loader': '内置资源处理',
-    'url-loader': '内置资源内联'
-  },
-  
-  // Webpack 插件到 Vite 插件映射
-  plugins: {
-    'HtmlWebpackPlugin': '内置 HTML 处理',
-    'MiniCssExtractPlugin': '内置 CSS 提取',
-    'DefinePlugin': 'define 配置选项',
-    'HotModuleReplacementPlugin': '内置 HMR',
-    'BundleAnalyzerPlugin': 'rollup-plugin-visualizer'
-  }
-};
-```
+**大型企业项目**：
+- 复杂的构建需求和定制化要求
+- 需要支持多种模块格式
+- 对稳定性要求极高
+- 团队已有丰富的 Webpack 经验
 
-## 总结与建议
+**特殊构建需求**：
+- 需要复杂的代码分割策略
+- 微前端架构（Module Federation）
+- 特殊的资源处理需求
+- 需要支持旧版浏览器
 
-### 选择决策框架
+**现有项目维护**：
+- 已有成熟的 Webpack 配置
+- 迁移成本过高
+- 项目稳定运行，不需要大幅改动
 
-```javascript
-// 构建工具选择决策树
-const decisionFramework = {
-  // 项目特征评估
-  projectAssessment: {
-    size: ['small', 'medium', 'large'],
-    complexity: ['simple', 'moderate', 'complex'],
-    team: ['junior', 'mixed', 'senior'],
-    timeline: ['tight', 'normal', 'flexible'],
-    maintenance: ['short', 'medium', 'long']
-  },
-  
-  // 决策规则
-  decisionRules: [
-    {
-      condition: 'size === "small" && timeline === "tight"',
-      recommendation: 'vite',
-      confidence: 0.9
-    },
-    {
-      condition: 'complexity === "complex" && maintenance === "long"',
-      recommendation: 'webpack',
-      confidence: 0.8
-    },
-    {
-      condition: 'team === "junior" && size !== "large"',
-      recommendation: 'vite',
-      confidence: 0.7
-    }
-  ]
-};
+## 迁移策略建议
 
-// 最佳实践建议
-const bestPractices = {
-  vite: [
-    '充分利用 ESM 和现代浏览器特性',
-    '合理配置依赖预构建',
-    '使用官方插件和成熟的社区插件',
-    '关注构建产物的兼容性',
-    '建立完善的开发和构建流程'
-  ],
-  
-  webpack: [
-    '合理使用缓存提升构建性能',
-    '优化 loader 和插件配置',
-    '实施代码分割和懒加载',
-    '监控和分析构建性能',
-    '保持配置的可维护性'
-  ],
-  
-  migration: [
-    '制定详细的迁移计划',
-    '分阶段进行迁移',
-    '充分测试功能和性能',
-    '培训团队使用新工具',
-    '建立回滚机制'
-  ]
-};
-```
+### 评估迁移可行性
+
+在考虑从 Webpack 迁移到 Vite 时，需要评估：
+
+1. **项目复杂度**：配置是否过于复杂，是否有特殊的构建需求
+2. **依赖兼容性**：第三方库是否支持 ESM，是否有不兼容的 Loader
+3. **团队接受度**：团队是否愿意学习新工具，是否有足够的迁移时间
+4. **收益评估**：迁移带来的开发效率提升是否值得投入成本
+
+### 渐进式迁移方案
+
+**阶段一：环境准备**
+- 在新分支进行迁移实验
+- 安装 Vite 和必要的插件
+- 创建基础的 vite.config.js
+
+**阶段二：配置迁移**
+- 迁移基础配置（别名、代理、环境变量）
+- 替换 Webpack Loader 为对应的 Vite 插件
+- 处理不兼容的功能和依赖
+
+**阶段三：测试验证**
+- 全面测试开发和构建功能
+- 性能对比和优化调整
+- 团队培训和文档更新
+
+## 选择建议
+
+### 技术选型决策框架
+
+**优先选择 Vite 的情况**：
+- ✅ 新项目或重构项目
+- ✅ 使用现代前端框架
+- ✅ 重视开发体验
+- ✅ 团队技术水平较高
+- ✅ 不需要复杂的构建定制
+
+**优先选择 Webpack 的情况**：
+- ✅ 大型复杂项目
+- ✅ 需要高度定制化构建
+- ✅ 团队有丰富 Webpack 经验
+- ✅ 需要支持旧版浏览器
+- ✅ 使用微前端架构
 
 ### 未来发展趋势
 
-**技术发展方向**:
-1. **ESM 标准化**: 浏览器原生支持越来越完善
-2. **构建性能**: 使用 Rust/Go 等语言提升构建速度
-3. **开发体验**: 更快的 HMR 和更好的错误提示
-4. **工具整合**: 构建、测试、部署一体化
-5. **云端构建**: 利用云计算资源加速构建
+**技术趋势**：
+1. **ESM 标准化**：浏览器支持越来越完善，ESM 将成为主流
+2. **构建工具现代化**：使用 Rust、Go 等语言重写，性能大幅提升
+3. **开发体验优化**：更快的 HMR、更好的错误提示、更智能的缓存
+4. **工具链整合**：构建、测试、部署一体化解决方案
 
-**选择建议**:
-- **新项目**: 优先考虑 Vite，享受现代化开发体验
-- **现有项目**: 评估迁移成本和收益，渐进式升级
-- **企业项目**: 根据团队能力和项目需求综合考虑
-- **学习目的**: 两者都要了解，掌握前端工程化全貌
+**建议**：
+- **新项目**：优先考虑 Vite，拥抱现代化工具链
+- **现有项目**：评估迁移收益，可以渐进式升级
+- **学习发展**：两种工具都要了解，掌握前端工程化全貌
+- **技术储备**：关注新兴构建工具（如 Turbopack、SWC）的发展
 
-Vite 和 Webpack 各有优势，选择合适的工具需要综合考虑项目特点、团队情况和长期维护需求。随着前端技术的发展，构建工具也在不断演进，保持学习和适应是关键。
+## 总结
+
+Vite 和 Webpack 代表了前端构建工具的两个时代。Webpack 以其成熟稳定的生态和强大的定制能力，在企业级项目中仍有不可替代的地位。而 Vite 则以其现代化的架构和卓越的开发体验，成为新项目的首选。
+
+选择哪个工具，关键在于：
+- **项目特点**：规模、复杂度、技术栈
+- **团队情况**：技术水平、经验积累、学习意愿
+- **业务需求**：开发效率、维护成本、长期规划
+
+无论选择哪个，都要深入理解其原理和最佳实践，才能发挥工具的最大价值。随着前端技术的快速发展，保持学习和适应新工具的能力，比掌握某个特定工具更重要。

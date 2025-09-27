@@ -376,95 +376,128 @@ const dependencyMap = await preBundler.preBundleDependencies();
 
 ### HMR (热模块替换) 实现
 
-**WebSocket 通信**:
+HMR 是 Vite 最核心的功能之一，它通过 WebSocket 实现服务器和浏览器之间的实时通信，让开发者能够在不刷新页面的情况下看到代码变更的效果。
+
+#### WebSocket 通信机制
+
+**什么是 WebSocket？**
+
+WebSocket 是一种全双工通信协议，允许服务器主动向客户端推送数据。与传统的 HTTP 请求-响应模式不同，WebSocket 建立持久连接，实现真正的实时通信。
+
+**在 Vite 中的运行位置：**
+- **服务端**：Vite 开发服务器启动 WebSocket 服务（通常在 24678 端口）
+- **客户端**：浏览器页面自动连接到这个 WebSocket 服务
+
+#### 文件变化检测与处理流程
+
+**完整的 HMR 工作流程：**
+
+1. **文件监听**：Vite 服务器使用 `chokidar` 监听文件系统变化
+2. **变化检测**：当文件保存时，监听器立即检测到变化
+3. **影响分析**：分析哪些模块受到影响，确定更新范围
+4. **模块重编译**：使用 esbuild 重新编译变化的模块
+5. **消息推送**：通过 WebSocket 推送更新通知（不是代码本身）
+6. **浏览器处理**：浏览器接收通知后，主动请求新的模块代码
+7. **模块替换**：替换旧模块，保持应用状态
+
+**关键点：WebSocket 推送的是消息，不是代码！**
+
 ```javascript
 // HMR 服务端实现
 import { WebSocketServer } from 'ws';
+import chokidar from 'chokidar';
 
 class HMRServer {
   constructor(server) {
     this.wss = new WebSocketServer({ server });
     this.clients = new Set();
     this.moduleGraph = new Map();
+    this.setupFileWatcher();
+  }
+  
+  setupFileWatcher() {
+    // 文件监听器 - 运行在服务器端
+    this.watcher = chokidar.watch('./src', {
+      ignored: /node_modules/,
+      persistent: true
+    });
+    
+    this.watcher.on('change', (filePath) => {
+      console.log(`文件变化: ${filePath}`);
+      this.handleFileChange(filePath);
+    });
   }
   
   setupWebSocket() {
     this.wss.on('connection', (ws) => {
       this.clients.add(ws);
+      console.log('客户端已连接');
       
       ws.on('close', () => {
         this.clients.delete(ws);
+        console.log('客户端已断开');
       });
       
-      // 发送连接确认
+      // 发送连接确认消息
       ws.send(JSON.stringify({
         type: 'connected'
       }));
     });
   }
   
-  // 文件变更处理
+  // 文件变更处理 - 这是核心逻辑
   async handleFileChange(filePath) {
-    const module = this.moduleGraph.get(filePath);
+    console.log(`处理文件变化: ${filePath}`);
     
-    if (!module) return;
+    // 第一步：分析影响范围
+    const fileType = this.getFileType(filePath);
+    const affectedModules = this.analyzeModuleDependencies(filePath);
     
-    // 1. 重新编译模块
-    const newContent = await this.recompileModule(filePath);
-    
-    // 2. 分析影响范围
-    const affectedModules = this.getAffectedModules(module);
-    
-    // 3. 发送更新消息
-    this.broadcast({
-      type: 'update',
-      updates: affectedModules.map(mod => ({
-        type: mod.type,
-        path: mod.path,
-        acceptedPath: mod.acceptedPath,
-        timestamp: Date.now()
-      }))
-    });
-  }
-  
-  getAffectedModules(changedModule) {
-    const affected = [];
-    const visited = new Set();
-    
-    const traverse = (module) => {
-      if (visited.has(module.id)) return;
-      visited.add(module.id);
+    // 第二步：重新编译模块
+    try {
+      const newCode = await this.recompileModule(filePath);
       
-      // 检查是否有 HMR 边界
-      if (module.hmrBoundary) {
-        affected.push({
-          type: 'js-update',
-          path: module.path,
-          acceptedPath: module.path
-        });
-        return; // 停止向上传播
-      }
+      // 更新内存中的模块缓存
+      this.moduleCache.set(filePath, newCode);
       
-      // 继续向上查找依赖者
-      module.importers.forEach(importer => {
-        traverse(importer);
-      });
-    };
-    
-    traverse(changedModule);
-    
-    // 如果没有找到 HMR 边界，则需要完全重新加载
-    if (affected.length === 0) {
-      affected.push({
-        type: 'full-reload'
-      });
+      console.log(`模块重编译完成: ${filePath}`);
+    } catch (error) {
+      console.error(`编译失败: ${filePath}`, error);
+      this.broadcast({ type: 'error', error: error.message });
+      return;
     }
     
-    return affected;
+    // 第三步：推送更新通知消息
+    const updateMessage = {
+      type: 'update',
+      updates: [{
+        type: fileType === 'css' ? 'css-update' : 'js-update',
+        path: filePath,
+        acceptedPath: filePath,
+        timestamp: Date.now()
+      }]
+    };
+    
+    console.log('推送更新消息:', updateMessage);
+    this.broadcast(updateMessage);
+  }
+  
+  async recompileModule(filePath) {
+    // 使用 esbuild 或相应的转换器重新编译
+    if (filePath.endsWith('.vue')) {
+      return await this.transformVueSFC(filePath);
+    } else if (filePath.endsWith('.ts')) {
+      return await this.transformTypeScript(filePath);
+    } else if (filePath.endsWith('.css')) {
+      return await this.transformCSS(filePath);
+    }
+    // ... 其他文件类型处理
   }
   
   broadcast(message) {
     const data = JSON.stringify(message);
+    console.log(`广播消息给 ${this.clients.size} 个客户端:`, message.type);
+    
     this.clients.forEach(client => {
       if (client.readyState === 1) { // WebSocket.OPEN
         client.send(data);
@@ -472,27 +505,34 @@ class HMRServer {
     });
   }
 }
+```
 
-// HMR 客户端实现
+#### 浏览器端 HMR 客户端
+
+```javascript
+// HMR 客户端实现 - 运行在浏览器中
 class HMRClient {
   constructor() {
     this.socket = null;
     this.isFirstUpdate = true;
-    this.pendingUpdateCallbacks = [];
   }
   
   connect() {
+    // 连接到 Vite 服务器的 WebSocket
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    const url = `${protocol}://${location.host}`;
+    const url = `${protocol}://${location.host}:24678`;
     
+    console.log('连接 HMR WebSocket:', url);
     this.socket = new WebSocket(url);
     
     this.socket.addEventListener('message', (event) => {
-      this.handleMessage(JSON.parse(event.data));
+      const message = JSON.parse(event.data);
+      console.log('收到 HMR 消息:', message);
+      this.handleMessage(message);
     });
     
     this.socket.addEventListener('close', () => {
-      console.log('[vite] server connection lost. polling for restart...');
+      console.log('[vite] 服务器连接丢失，尝试重连...');
       this.reconnect();
     });
   }
@@ -500,64 +540,82 @@ class HMRClient {
   handleMessage(message) {
     switch (message.type) {
       case 'connected':
-        console.log('[vite] connected.');
+        console.log('[vite] HMR 连接已建立');
         break;
         
       case 'update':
+        console.log('[vite] 收到更新通知:', message.updates);
         this.handleUpdate(message.updates);
         break;
         
       case 'full-reload':
+        console.log('[vite] 执行完整页面刷新');
         location.reload();
+        break;
+        
+      case 'error':
+        console.error('[vite] HMR 错误:', message.error);
         break;
     }
   }
   
   async handleUpdate(updates) {
     for (const update of updates) {
+      console.log(`处理更新: ${update.type} - ${update.path}`);
+      
       if (update.type === 'js-update') {
-        await this.updateModule(update);
+        await this.updateJavaScriptModule(update);
       } else if (update.type === 'css-update') {
-        this.updateCSS(update);
+        this.updateCSSModule(update);
       }
     }
   }
   
-  async updateModule(update) {
+  async updateJavaScriptModule(update) {
     const { path, timestamp } = update;
     
-    // 1. 获取新模块
-    const newModule = await import(`${path}?t=${timestamp}`);
+    console.log(`更新 JS 模块: ${path}`);
     
-    // 2. 查找 HMR 回调
-    const callbacks = this.getHMRCallbacks(path);
-    
-    // 3. 执行更新回调
-    for (const callback of callbacks) {
-      try {
+    // 关键：浏览器主动请求新的模块代码
+    // WebSocket 只是通知，代码通过 HTTP 获取
+    try {
+      const newModule = await import(`${path}?t=${timestamp}`);
+      console.log('新模块加载成功:', newModule);
+      
+      // 查找并执行 HMR 回调
+      const callbacks = this.getHMRCallbacks(path);
+      for (const callback of callbacks) {
         await callback(newModule);
-      } catch (error) {
-        console.error('[vite] HMR update failed:', error);
-        location.reload();
-        return;
       }
+      
+      console.log(`模块 ${path} 热更新完成`);
+    } catch (error) {
+      console.error(`模块更新失败: ${path}`, error);
+      console.log('回退到完整页面刷新');
+      location.reload();
     }
   }
   
-  updateCSS(update) {
+  updateCSSModule(update) {
     const { path, timestamp } = update;
     
-    // 查找对应的 style 标签
+    console.log(`更新 CSS 模块: ${path}`);
+    
+    // 查找现有的样式标签
     const existingLink = document.querySelector(`link[href*="${path}"]`);
     
     if (existingLink) {
+      // 创建新的样式标签
       const newLink = existingLink.cloneNode();
       newLink.href = `${path}?t=${timestamp}`;
       
       newLink.addEventListener('load', () => {
+        // 新样式加载完成后移除旧样式
         existingLink.remove();
+        console.log(`CSS 模块 ${path} 热更新完成`);
       });
       
+      // 插入新样式标签
       existingLink.parentNode.insertBefore(newLink, existingLink.nextSibling);
     }
   }
@@ -569,26 +627,99 @@ class HMRClient {
   }
 }
 
-// HMR API 实现
+// 自动启动 HMR 客户端
+const hmrClient = new HMRClient();
+hmrClient.connect();
+```
+
+#### 实际推送的消息格式
+
+**JavaScript 文件变化时的消息：**
+```javascript
+{
+  type: 'update',
+  updates: [
+    {
+      type: 'js-update',           // 更新类型
+      path: '/src/components/Button.vue',  // 文件路径
+      acceptedPath: '/src/components/Button.vue',
+      timestamp: 1695825600000     // 时间戳，用于缓存破坏
+    }
+  ]
+}
+```
+
+**CSS 文件变化时的消息：**
+```javascript
+{
+  type: 'update',
+  updates: [
+    {
+      type: 'css-update',
+      path: '/src/styles/main.css',
+      timestamp: 1695825600000
+    }
+  ]
+}
+```
+
+**需要完全刷新时的消息：**
+```javascript
+{
+  type: 'full-reload'
+}
+```
+
+#### HMR API 使用
+
+```javascript
+// 在模块中使用 HMR API
 if (import.meta.hot) {
   // 接受自身更新
   import.meta.hot.accept((newModule) => {
-    // 更新逻辑
-    console.log('Module updated:', newModule);
+    console.log('模块自身更新:', newModule);
+    // 执行更新逻辑，比如重新渲染组件
   });
   
-  // 接受依赖更新
-  import.meta.hot.accept('./dependency.js', (newDep) => {
+  // 接受特定依赖的更新
+  import.meta.hot.accept('./utils.js', (newUtils) => {
+    console.log('工具模块更新:', newUtils);
     // 处理依赖更新
   });
   
-  // 模块销毁时的清理
+  // 模块销毁时的清理工作
   import.meta.hot.dispose((data) => {
-    // 清理副作用
-    clearInterval(data.timer);
+    // 清理定时器、事件监听器等副作用
+    if (data.timer) {
+      clearInterval(data.timer);
+    }
   });
+  
+  // 保存状态到下次更新
+  import.meta.hot.data.timer = setInterval(() => {
+    console.log('定时任务运行中...');
+  }, 1000);
 }
 ```
+
+#### 为什么这样设计？
+
+**分离关注点：**
+- **WebSocket**：负责实时通知，传输轻量级消息
+- **HTTP**：负责传输具体的代码内容
+- 这样设计让架构更清晰，性能更好
+
+**实时性保证：**
+- 文件一保存，WebSocket 立即推送通知
+- 浏览器收到通知后立即请求新代码
+- 整个过程通常在 100ms 内完成
+
+**状态保持：**
+- 只替换变化的模块，不影响其他模块
+- 保持应用的运行状态（表单数据、滚动位置等）
+- 提供极佳的开发体验
+
+这就是 Vite HMR 的完整工作原理：通过 WebSocket 实现实时通知，通过模块化的方式实现精确更新，让开发者能够享受到毫秒级的热更新体验！
 
 ## 插件系统
 
