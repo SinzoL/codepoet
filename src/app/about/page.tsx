@@ -41,14 +41,35 @@ export default function About() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="px-6 py-8 sm:px-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-              关于我
-            </h1>
+            {/* 头像和标题区域 */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <Image 
+                    src="/avatar.png" 
+                    alt="SinzoL 的头像" 
+                    width={100}
+                    height={100}
+                    className="w-30 h-30 rounded-full object-cover shadow-lg border-4 border-gray-100"
+                    priority
+                  />
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center sm:text-left">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  关于我
+                </h1>
+                <p className="text-xl text-gray-600 mb-4">
+                  你好，我是 SinzoL，来自哈尔滨工业大学（深圳）。
+                </p>
+                
+              </div>
+            </div>
             
             <div className="prose prose-lg max-w-none">
-              <p className="text-xl text-gray-600 mb-8">
-                你好，我是 SinzoL，我来自哈尔滨工业大学（深圳）。
-              </p>
               
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">我的爱好</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
