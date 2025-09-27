@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TechCategoryIcon from '@/components/tech/TechCategoryIcon';
+import TechSearch from '@/components/TechSearch';
 import Link from 'next/link';
 import { techCategories } from '@/lib/tech';
 import { getSortedPostsData } from '@/lib/posts';
@@ -19,11 +20,22 @@ export default function TechCategories() {
       <Header />
       
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">技术分类</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            探索不同领域的技术知识
-          </p>
+        <div className="mb-12">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">技术分类</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+              探索不同领域的技术知识
+            </p>
+          </div>
+          
+          {/* 全局搜索框 */}
+          <div className="max-w-2xl mx-auto">
+            <TechSearch 
+              posts={allPosts} 
+              placeholder="搜索所有技术文章..."
+              className="w-full"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

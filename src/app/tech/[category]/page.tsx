@@ -1,34 +1,49 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import TechCategoryIcon from '@/components/tech/TechCategoryIcon';
 import InfiniteScroll from '@/components/InfiniteScroll';
+import TechSearch from '@/components/TechSearch';
+import TechCategoryIcon from '@/components/tech/TechCategoryIcon';
 import Link from 'next/link';
-import { techCategories, getTechCategoryById } from '@/lib/tech';
+import { techCategories } from '@/lib/tech';
 import { getSortedPostsData } from '@/lib/posts';
 
-interface TechCategoryPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+// 生成动态 metadata
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params;
+  const techCategory = techCategories.find(cat => cat.id === category);
+  
+  if (!techCategory) {
+    return {
+      title: '分类不存在',
+    };
+  }
+
+  return {
+    title: `${techCategory.name} - 技术分类`,
+    description: techCategory.description,
+  };
 }
 
+// 生成静态路径
 export async function generateStaticParams() {
   return techCategories.map((techCategory) => ({
-    id: techCategory.id,
+    category: techCategory.id,
   }));
 }
 
-export default async function TechCategoryPage({ params }: TechCategoryPageProps) {
-  const { id } = await params;
-  const techCategory = getTechCategoryById(id);
+// 主页面组件
+export default async function TechCategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params;
+  const techCategory = techCategories.find(cat => cat.id === category);
   
   if (!techCategory) {
     notFound();
   }
 
   const allPosts = getSortedPostsData();
-  const techCategoryPosts = allPosts.filter(post => post.techCategory === techCategory.id);
+  const posts = allPosts.filter(post => post.techCategory === category);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,12 +75,22 @@ export default async function TechCategoryPage({ params }: TechCategoryPageProps
             {techCategory.description}
           </p>
           <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${techCategory.color}`}>
-            共 {techCategoryPosts.length} 篇文章
+            共 {posts.length} 篇文章
+          </div>
+          
+          {/* 搜索框 */}
+          <div className="mt-8 max-w-md mx-auto">
+            <TechSearch 
+              posts={allPosts} 
+              categoryId={category}
+              placeholder={`在 ${techCategory.name} 中搜索...`}
+              className="w-full"
+            />
           </div>
         </div>
 
         {/* 文章列表 */}
-        {techCategoryPosts.length > 0 ? (
+        {posts.length > 0 ? (
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900">全部文章</h2>
@@ -74,16 +99,22 @@ export default async function TechCategoryPage({ params }: TechCategoryPageProps
               </p>
             </div>
             
-            <InfiniteScroll
-              items={techCategoryPosts}
-              itemsPerPage={4}
-              type="tech"
-              categoryInfo={{
-                id: techCategory.id,
-                name: techCategory.name,
-                color: techCategory.color
-              }}
-            />
+            <Suspense fallback={
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="mt-2 text-gray-500">加载中...</p>
+              </div>
+            }>
+              <InfiniteScroll 
+                items={posts} 
+                type="tech"
+                categoryInfo={{
+                  id: techCategory.id,
+                  name: techCategory.name,
+                  color: techCategory.color
+                }}
+              />
+            </Suspense>
           </div>
         ) : (
           <div className="text-center py-12">
