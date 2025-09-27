@@ -84,9 +84,9 @@ export default function InfiniteScroll({
     <div>
       {/* 文章列表 */}
       <div className="space-y-8">
-        {displayedItems.map((item) => (
+        {displayedItems.map((item, index) => (
           <Link 
-            key={item.id} 
+            key={`${item.id}-${index}`} 
             href={type === 'tech' ? `/posts/${item.id}` : `/essays/${item.id}`} 
             className="group block"
           >
