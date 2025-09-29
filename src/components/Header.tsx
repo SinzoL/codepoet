@@ -39,7 +39,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 backdrop-blur-sm bg-white/95">
+    <header className="sticky top-0 z-50 bg-gradient-to-b from-white/60 to-white/40 backdrop-blur-lg border-b border-white/10 shadow-lg backdrop-saturate-150">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
@@ -84,7 +84,7 @@ export default function Header() {
         
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 bg-white">
+          <div className="md:hidden border-t border-white/10 bg-white/50 backdrop-blur-lg">
             <nav className="py-4 space-y-2">
               <Link 
                 href="/" 
