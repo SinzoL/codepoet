@@ -32,7 +32,7 @@ export default function Home() {
             {/* 代码诗歌 */}
             <div className="bg-gray-900 text-green-400 p-8 rounded-lg font-mono text-sm md:text-base max-w-lg mx-auto mb-12 shadow-lg">
               <div className="text-left">
-                <div className="text-gray-500">{`// 代码诗人的第一首诗`}</div>
+                <div className="text-gray-500">{`// 代码与诗`}</div>
                 <div className="mt-2">
                   <span className="text-blue-400">function</span> <span className="text-yellow-400">createDream</span>() {'{'}
                 </div>
